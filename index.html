@@ -205,6 +205,13 @@ details.fold[open] .chev{transform:rotate(180deg)}
 [data-priv]:not(.shown)>*{filter:blur(11px);user-select:none;-webkit-user-select:none;pointer-events:none}
 [data-priv]:not(.shown)::after{content:"اضغط عشان تشوف";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--body);font-size:.85rem;font-weight:600;letter-spacing:0}
 .hero [data-priv]:not(.shown)::after{justify-items:start}
+.item.fl{grid-template-columns:48px 1fr auto;cursor:pointer}
+.item.fl .acts{grid-column:1/-1;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.sec{display:flex;flex-direction:column;gap:16px}
+.secbar{display:none;align-items:center;justify-content:space-between;gap:8px;background:color-mix(in srgb,var(--lime) 30%,var(--soft));border-radius:12px;padding:8px 12px;font-weight:600;font-size:.9rem}
+.reordering .secbar{display:flex}
+.reordering .sec>:not(.secbar){display:none}
+.secbar .btn{padding:4px 12px}
 .potwrap{background:var(--surface);border-radius:18px;overflow:hidden}
 .potwrap>.item{background:none}
 .potdet{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--soft);padding-top:12px}
@@ -479,11 +486,14 @@ svg text{font-family:var(--body)}
     </div>
 
 
+    <div class="sec" data-sec="pots">
     <details class="fold" id="svPotsFold">
       <summary><h2>فلوسك المتحوّشة فين</h2><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
       <div data-priv="pots" role="button" tabindex="0" aria-label="اضغط عشان تشوف"><div class="list" id="svPots"></div></div>
     </details>
+    </div>
 
+    <div class="sec" data-sec="add">
     <details class="add" id="svAdd">
       <summary id="svFormTitle">إضافة تحويش</summary>
       <div class="inner">
@@ -498,7 +508,9 @@ svg text{font-family:var(--body)}
         <button type="button" class="btn link small" id="svCancel" hidden>إلغاء التعديل</button>
       </div>
     </details>
+    </div>
 
+    <div class="sec" data-sec="log">
     <div class="card" id="svLogCard">
       <h2>سجّل تحويش شهر</h2>
       <form id="svLogForm" class="fields">
@@ -510,7 +522,9 @@ svg text{font-family:var(--body)}
       <div class="row between" style="margin-top:4px"><h3 style="font-size:.95rem">حوّشت كام كل شهر</h3><span class="muted small" id="svByMonthSum"></span></div>
       <div class="cats" id="svByMonth"></div>
     </div>
+    </div>
 
+    <div class="sec" data-sec="plan">
     <details class="card fold" id="svPlan">
       <summary><h2>احسب هيبقى معاك كام</h2><span class="row" style="gap:8px;flex-wrap:nowrap"><span class="chip warn">توقّع بس</span><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span></summary>
       <div class="foldin">
@@ -529,7 +543,9 @@ svg text{font-family:var(--body)}
       <div class="tip" id="plGoal" hidden></div>
       </div>
     </details>
+    </div>
 
+    <div class="sec" data-sec="goal">
     <div class="card" id="svGoalCard" hidden>
       <div class="row between"><h2 id="svGoalName"></h2><span class="chip good" id="svGoalPct"></span></div>
       <div class="progress"><i id="svGoalBar" style="width:0"></i></div>
@@ -545,6 +561,8 @@ svg text{font-family:var(--body)}
         </form>
       </div>
     </details>
+    </div>
+    <button type="button" class="btn link small" id="svReorder" style="order:999;align-self:center">رتّب الصفحة</button>
   </section>
 
   <!-- FREELANCE -->
@@ -1247,10 +1265,10 @@ async function flToSavings(f,pid){if(flSaved(f))return;const potId=await ensureP
   if(f.savePot!==potId)await store.update('freelance',f.id,{toSave:true,savePot:potId});}
 function flItem(f){
   const cur=f.currency==='SAR'?'':` · ${fmt(f.amount)} ${esc(f.currency)}`;
-  return`<div class="item"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
+  return`<div class="item fl" data-fltap="${f.id}"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
   <div class="what"><b>${esc(f.client)}${f.project?' · '+esc(f.project):''}</b><span>${f.field?esc(f.field)+' · ':''}${f.kind?FL_KIND[f.kind]+' · ':''}${dayLabel(f.date)}${cur}${+f.fee?` · عمولة ${fmt(f.fee)}`:''}</span></div>
   <div class="end"><span class="amt">${amtHTML(flSar(f))}</span>${f.status==='paid'?'<span class="chip good">اتقبضت</span>':'<span class="chip warn">مستني</span>'}</div>
-  <span class="row" style="gap:0;flex-wrap:nowrap">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:flSaved(f)?'<span class="chip good">في التحويش</span>':`<button class="btn tiny" data-fl2save="${f.id}">للتحويش</button>`}<button class="btn tiny" data-fledit="${f.id}">تعديل</button><button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
+  <span class="acts">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:flSaved(f)?'<span class="chip good">في التحويش</span>':`<button class="btn tiny" data-fl2save="${f.id}">للتحويش</button>`}<button class="btn tiny" data-fledit="${f.id}">تعديل</button><button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
 }
 function renderFreelance(){
   const y=curMonth.slice(0,4);
@@ -1290,7 +1308,7 @@ function render(){
   $('#storeBadge').textContent='بياناتك محفوظة على الجهاز ده بس. اعمل نسخة احتياطية كل فترة.';
   const d=monthData(curMonth);
   fillAccSelects();
-  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();applyPriv();
+  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();applyPriv();applySecOrder();
 }
 
 /* ---------- events ---------- */
@@ -1413,6 +1431,16 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-depcancel]')){UI.editDep=null;render()}});
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-depsave]');if(!f)return;e.preventDefault();const[a,d]=f.querySelectorAll('input');const amount=+a.value;if(!(amount>0))return;
   const id=f.dataset.depsave;UI.editDep=null;act(store.update('savings',id,{amount,date:d.value||todayISO()}),'اتعدّل')});
+const SEC_LABEL={goal:'هدف التحويش',pots:'فلوسك المتحوّشة فين',add:'إضافة تحويش',log:'سجّل تحويش شهر',plan:'احسب هيبقى معاك كام'};
+const SEC_DEFAULT=['goal','pots','add','log','plan'];
+function secOrder(){const o=(S.settings.saveOrder||[]).filter(k=>SEC_DEFAULT.includes(k));SEC_DEFAULT.forEach(k=>{if(!o.includes(k))o.push(k)});return o}
+function applySecOrder(){const o=secOrder();document.querySelectorAll('#p-save .sec').forEach(el=>{const i=o.indexOf(el.dataset.sec);el.style.order=i+1;
+  let bar=el.querySelector(':scope>.secbar');if(!bar){bar=document.createElement('div');bar.className='secbar';el.prepend(bar)}
+  bar.innerHTML=`<span>${SEC_LABEL[el.dataset.sec]}</span><span class="row" style="gap:6px;flex-wrap:nowrap"><button type="button" class="btn tiny" data-secmove="${el.dataset.sec}:-1" ${i===0?'disabled':''} aria-label="لفوق">↑</button><button type="button" class="btn tiny" data-secmove="${el.dataset.sec}:1" ${i===o.length-1?'disabled':''} aria-label="لتحت">↓</button></span>`})}
+$('#svReorder').onclick=()=>{const p=$('#p-save');const on=!p.classList.contains('reordering');p.classList.toggle('reordering',on);$('#svReorder').textContent=on?'خلصت الترتيب':'رتّب الصفحة';if(on)window.scrollTo({top:0,behavior:'smooth'})};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-secmove]');if(!b)return;const[k,d]=b.dataset.secmove.split(':');const o=secOrder();const i=o.indexOf(k),j=i+(+d);if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];
+  S.settings.saveOrder=o;applySecOrder();act(store.saveSettings({saveOrder:o}))});
+document.addEventListener('click',e=>{const it=e.target.closest('[data-fltap]');if(!it||e.target.closest('button'))return;const b=it.querySelector('[data-fledit]');if(b)b.click()});
 // savings planner (estimates only, never touches real savings)
 $('#plMonthly').addEventListener('input',e=>{UI.plMonthly=+e.target.value||0;renderPlanner()});
 $('#plMonthly').addEventListener('change',e=>{const v=+e.target.value||0;act(store.saveSettings({planMonthly:v})).then(()=>{UI.plMonthly=null})});
