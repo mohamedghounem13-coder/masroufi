@@ -19,6 +19,9 @@ input:not(#txAmt),select,textarea{font-size:16px!important}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}
 img{max-width:100%}
 [hidden]{display:none!important}
+:root.f-kufam{--display:"Kufam","Alexandria",system-ui,sans-serif;--body:"Kufam","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root.f-kufam body,:root.f-kufam button,:root.f-kufam input,:root.f-kufam select,:root.f-kufam textarea{font-family:"Kufam","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root.f-kufam h1,:root.f-kufam .hero .big{font-weight:800}
 :root.f-lalezar{--display:"Lalezar","Alexandria","IBM Plex Sans Arabic",system-ui,sans-serif;--body:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif}
 :root.f-lalezar body,:root.f-lalezar button,:root.f-lalezar input,:root.f-lalezar select,:root.f-lalezar textarea{font-family:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif;font-weight:400!important;letter-spacing:.01em}
 :root.f-lalezar body{line-height:1.7}
@@ -29,7 +32,7 @@ img{max-width:100%}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=Lalezar&family=Kufam:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: phone-width app column, deep-green hero cards with lime meters, white rounded cards, icon circles tinted by category, fixed bottom nav */
 :root{
@@ -335,7 +338,7 @@ svg text{font-family:var(--body)}
 <div class="app" dir="rtl" lang="ar">
   <header class="top">
     <div class="r">
-      <h1 style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 100 100" width="40" height="40" aria-hidden="true" style="flex:none"><rect width="100" height="100" rx="24" fill="#761A36"/><rect x="28" y="26" width="42" height="16" rx="4" fill="#FBF0E3" transform="rotate(-9 49 34)"/><rect x="25" y="34" width="48" height="16" rx="4" fill="#C07482" transform="rotate(-9 49 42)"/><path d="M23 47q0-3 3-3h3l4 3q1.2.8 2.6.5L73.5 40q3.5-.6 3.5 3V66q0 4-4 4H27q-4 0-4-4Z" fill="#FBF0E3"/></svg>مصروفي</h1>
+      <h1 style="display:flex;align-items:center;gap:10px"><img src="icons/icon-192.png" width="42" height="42" alt="" style="border-radius:11px;flex:none;box-shadow:0 2px 8px rgb(0 0 0/.2)">مصروفي</h1>
     </div>
     <div class="r">
       <span class="page" id="pageTitle">نظرة عامة</span>
@@ -1774,10 +1777,11 @@ $('#bkImport').onchange=async e=>{
   document.addEventListener('click',e=>{const b=e.target.closest('summary button,summary select,summary input');if(b&&b.closest('summary'))e.preventDefault()},true);
 })();
 
-/* ---------- heading font ---------- */
-(function(){const set=v=>{document.documentElement.classList.toggle('f-lalezar',v==='lalezar');try{localStorage.setItem(LS+'.font',v)}catch(e){}};
-  let v='alexandria';try{v=localStorage.getItem(LS+'.font')||'alexandria'}catch(e){}set(v);
-  $('#fontToggle').onclick=()=>{v=v==='lalezar'?'alexandria':'lalezar';set(v);toast(v==='lalezar'?'الخط: لاله‌زار (الجديد)':'الخط: الأصلي')};})();
+/* ---------- font ---------- */
+(function(){const FONTS=['alexandria','lalezar','kufam'],NAMES={alexandria:'الأصلي',lalezar:'لاله‌زار',kufam:'كوفام (حاد)'};
+  const set=v=>{FONTS.forEach(f=>document.documentElement.classList.toggle('f-'+f,f===v&&f!=='alexandria'));try{localStorage.setItem(LS+'.font',v)}catch(e){}};
+  let v='alexandria';try{v=localStorage.getItem(LS+'.font')||'alexandria'}catch(e){}if(!FONTS.includes(v))v='alexandria';set(v);
+  $('#fontToggle').onclick=()=>{v=FONTS[(FONTS.indexOf(v)+1)%FONTS.length];set(v);toast('الخط: '+NAMES[v])};})();
 
 /* ---------- bottom bar: 4 pinned sections + "more" ---------- */
 const NAV_ALL=[...document.querySelectorAll('.nav [data-tab]')].map(b=>({k:b.dataset.tab,icon:b.querySelector('svg').outerHTML,label:b.querySelector('span').textContent}));
