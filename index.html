@@ -101,6 +101,17 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pinrow button svg.i{color:var(--brand-ink)}
 .pinrow button[aria-pressed="false"]{opacity:.55}
 .themes button{background:var(--soft)}
+button.monthpick{appearance:none;border:0;font:inherit;cursor:pointer;text-align:right;padding:8px 12px 8px 30px}
+.monthpick .dp{display:flex;flex-direction:column;line-height:1.25}
+.monthpick .dp b{font-weight:600;font-size:.9rem}
+.monthpick .dp small{font-size:.7rem;color:var(--muted)}
+.dsmonths{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dsmonths button{appearance:none;border:0;background:var(--surface);border-radius:12px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--fg);font:inherit}
+.dsmonths button b{font-size:.9rem;font-weight:600}
+.dsmonths button small{font-size:.7rem;color:var(--muted)}
+.dsmonths button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+.dsmonths button[aria-pressed="true"] small{color:inherit;opacity:.8}
+#dsQuick button{background:var(--surface)}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
@@ -403,11 +414,12 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
     </div>
     <div class="r">
       <span class="page" id="pageTitle">نظرة عامة</span>
-      <label class="monthpick" aria-label="الشهر">
+      <button type="button" class="monthpick" id="datePill" aria-label="اختار الفترة">
         <svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>
-        <select id="monthSel"></select>
+        <span class="dp"><b id="dpMain"></b><small id="dpSub"></small></span>
         <svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-      </label>
+      </button>
+      <select id="monthSel" hidden aria-hidden="true"></select>
     </div>
   </header>
 
@@ -800,6 +812,22 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
   </form>
 </div>
 
+<div class="sheet" id="dateSheet" dir="rtl" lang="ar" aria-hidden="true">
+  <div class="body">
+    <div class="grab"></div>
+    <div class="row between"><h2 style="font-size:1.2rem">اختار الفترة</h2><button type="button" class="btn x" id="dateClose" aria-label="اقفل">✕</button></div>
+    <p class="muted small" style="margin:0" id="dsNow"></p>
+    <div class="chips" id="dsQuick" style="flex-wrap:wrap"></div>
+    <h3 style="font-size:.95rem;margin:4px 0 0">شهر معيّن</h3>
+    <div class="dsmonths" id="dsMonths"></div>
+    <h3 style="font-size:.95rem;margin:4px 0 0">من تاريخ لتاريخ</h3>
+    <form class="fields" id="dsRange">
+      <label>من<input type="date" id="dsFrom" required></label>
+      <label>إلى<input type="date" id="dsTo" required></label>
+      <button class="btn primary">اعرض صرفي في المدة دي</button>
+    </form>
+  </div>
+</div>
 <div class="sheet" id="moreSheet" dir="rtl" lang="ar" aria-hidden="true">
   <div class="body">
     <div class="grab"></div>
@@ -1562,7 +1590,7 @@ function renderFreelance(){
   $('#flRateWrap').hidden=cur==='SAR';
 }
 
-function renderMonthSel(){
+function renderMonthSel(){if(typeof renderDatePill==='function'&&$('#dpMain'))renderDatePill();
   const set=new Set();for(let i=-12;i<=3;i++)set.add(shiftMonth(todayISO().slice(0,7),i));
   S.tx.forEach(t=>t.date&&set.add(monthOf(t.date)));set.add(curMonth);
   const ms=[...set].sort().reverse();const sel=$('#monthSel');
@@ -1578,7 +1606,7 @@ function render(){
 }
 
 /* ---------- events ---------- */
-function setTab(t){hidePriv();UI.tab=t;markNav();
+function setTab(t){hidePriv();UI.tab=t;markNav();{const dp=document.getElementById("datePill");if(dp)dp.hidden=["save","subs","debts","settings"].includes(t)}
   Object.keys(TITLES).forEach(k=>$('#p-'+k).hidden=k!==t);{const p=$('#p-'+t);p.classList.remove('enter');void p.offsetWidth;p.classList.add('enter')}$('#pageTitle').textContent=TITLES[t];if(t==='home'&&typeof renderProfile==='function'&&$('#profAvatar'))renderProfile();
   try{localStorage.setItem(LS+'.tab',t)}catch(e){}window.scrollTo(0,0)}
 $('#monthSel').onchange=e=>{curMonth=e.target.value;render()};
@@ -1935,6 +1963,25 @@ $('#pinRow').addEventListener('click',e=>{const p=e.target.closest('[data-pin]')
   else{if(pins.length>=4){toast('الشريط فيه 4 أقسام. شيل واحد الأول');return}pins=NAV_ALL.map(t=>t.k).filter(x=>pins.includes(x)||x===k)}
   setPins(pins)});
 buildNav();renderPinRow();
+
+/* ---------- date pill + period sheet ---------- */
+const wdFmt=new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{weekday:'long'});
+function renderDatePill(){const t=todayISO(),isNow=curMonth===t.slice(0,7);
+  $('#dpMain').textContent=isNow?`${wdFmt.format(new Date())} ${dayLabel(t)}`:monthName(curMonth);
+  $('#dpSub').textContent=isNow?`أرقام ${monthName(curMonth)}`:'شهر تاني · دوس عشان ترجع';}
+function renderDateSheet(){const t=todayISO(),cm=t.slice(0,7);
+  $('#dsNow').textContent=`النهارده ${wdFmt.format(new Date())} ${dayLabel(t)} ${t.slice(0,4)}`;
+  const q=[[cm,'الشهر ده'],[shiftMonth(cm,-1),'الشهر اللي فات']];
+  $('#dsQuick').innerHTML=q.map(([m,l])=>`<button type="button" data-month="${m}" aria-pressed="${m===curMonth}">${l}</button>`).join('')+`<button type="button" data-range="7">آخر 7 أيام</button><button type="button" data-range="30">آخر 30 يوم</button><button type="button" data-range="year">السنة دي</button>`;
+  const ms=[];for(let i=0;i<12;i++)ms.push(shiftMonth(cm,-i));
+  $('#dsMonths').innerHTML=ms.map(m=>`<button type="button" data-month="${m}" aria-pressed="${m===curMonth}"><b>${monthShort(m)}</b><small>${m.slice(0,4)}</small></button>`).join('');
+  if(!$('#dsFrom').value){$('#dsFrom').value=cm+'-01';$('#dsTo').value=t}}
+$('#datePill').onclick=()=>{renderDateSheet();showSheet('#dateSheet')};
+$('#dateClose').onclick=()=>hideSheet('#dateSheet');
+$('#dateSheet').addEventListener('click',e=>{if(e.target.id==='dateSheet'){hideSheet('#dateSheet');return}
+  const m=e.target.closest('[data-month]');if(m){curMonth=m.dataset.month;hideSheet('#dateSheet');render();return}
+  const r=e.target.closest('[data-range]');if(r){UI.range=r.dataset.range;hideSheet('#dateSheet');setTab('stats');render()}});
+$('#dsRange').onsubmit=e=>{e.preventDefault();UI.range='custom';$('#rFrom').value=$('#dsFrom').value;$('#rTo').value=$('#dsTo').value;hideSheet('#dateSheet');setTab('stats');render()};
 
 /* ---------- sliding sheets (drag down to close) ---------- */
 function showSheet(sel){const s=$(sel);s.setAttribute('aria-hidden','false');s.querySelector('.body').style.transform='';requestAnimationFrame(()=>s.classList.add('open'))}
