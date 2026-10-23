@@ -255,6 +255,11 @@ svg.wchip{width:46px;height:34px;min-width:46px;flex:none;display:block;backgrou
 .nvisa{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:900;font-style:italic;font-size:1.45rem;letter-spacing:-.02em;color:#fff;line-height:1}
 .namex{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:800;font-size:.8rem;color:#fff;background:#2E77BC;border-radius:4px;padding:4px 6px;letter-spacing:.04em}
 .wact{direction:rtl}
+.addnet{border:1px dashed rgb(255 255 255/.55);background:rgb(255 255 255/.12);color:#fff;border-radius:10px;padding:6px 10px;font:inherit;font-size:.74rem;font-weight:600;cursor:pointer;flex:none;direction:rtl}
+.wsw.wnet{gap:10px;align-items:center}
+.netbtn{width:auto!important;height:40px!important;border-radius:10px!important;padding:0 10px!important;background:rgb(255 255 255/.12)!important;border:1px solid rgb(255 255 255/.25)!important;color:#fff;display:grid;place-items:center;cursor:pointer;font-size:1rem}
+.netbtn .nlogo{height:24px}
+.netbtn .nvisa{font-size:1.1rem}
 .wact button{width:34px;height:34px;padding:0!important;border-radius:50%!important;display:grid;place-items:center;flex:none}
 .wact button svg.i{width:17px;height:17px}
 .wact button[data-del]{min-width:34px;width:auto;padding:0 8px!important;border-radius:17px!important}
@@ -891,6 +896,9 @@ const BANKS=[
   [/الراجحي|rajhi/i,'alrajhibank.com.sa','rajhi'],[/الإنماء|الانماء|alinma/i,'alinma.com',''],[/البلاد|albilad/i,'bankalbilad.com',''],[/ساب|\bsab\b|sabb/i,'sab.com',''],
   [/العربي|\banb\b/i,'anb.com.sa',''],[/الجزيرة|aljazira|\bbaj\b/i,'baj.com.sa',''],[/الفرنسي|\bbsf\b|fransi/i,'alfransi.com.sa',''],[/الاستثمار|saib/i,'saib.com.sa',''],
   [/d360/i,'d360.com',''],[/urpay|يور ?باي/i,'urpay.com.sa','']];
+// some sites (e.g. alahli.com) have no icon in Google's basic favicon service; use the fuller one for those
+const FAV_V2=['alahli.com'];
+const favURL=(d,sz=64)=>FAV_V2.includes(d)?`https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.${d}&size=${Math.min(sz,64)}`:`https://www.google.com/s2/favicons?domain=${d}&sz=${sz}`;
 const bankOf=n=>BANKS.find(([re])=>re.test(n||''));
 const bankDomain=n=>{const b=bankOf(n);return b?b[1]:''};
 // card designs inspired by each bank's colours (approximations, not the official card art)
@@ -917,7 +925,7 @@ const subDomain=n=>{for(const[re,d]of LOGOS)if(re.test(n||''))return d;return''}
 function subBadge(s){
   const kind=s.kind||detectKind(s.name);const col=`var(--${s.color||'k-sub'})`;const d=subDomain(s.name);
   const fb=`<span class="fb">${subIcon(kind)}</span>`;
-  return d?`<span class="badge sq logo" style="--bc:${col}"><img class="sl" src="https://www.google.com/s2/favicons?domain=${d}&sz=128" alt="" loading="lazy">${fb}</span>`
+  return d?`<span class="badge sq logo" style="--bc:${col}"><img class="sl" src="${favURL(d,128)}" alt="" loading="lazy">${fb}</span>`
           :`<span class="badge sq" style="background:${col};color:#fff">${subIcon(kind)}</span>`;
 }
 function noLogo(t){const bl=t.closest('.blogo');if(bl){bl.remove();return}const b=t.closest('.badge');if(b)b.classList.add('nologo')}
@@ -1172,11 +1180,12 @@ function renderHome(d){
     const look=cardLook(a);const dom=bankDomain(a.bank);
     return`<div class="wcard${UI.openAcc===a.id?' open':''}${a.img?' art':''}" role="button" tabindex="0" data-accopen="${a.id}" aria-expanded="${UI.openAcc===a.id}" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${look}">
       ${UI.colorFor===a.id&&UI.openAcc===a.id?`<div class="wsw">${['bank',...SWATCH].map(c=>`<button type="button" data-setcolor="${a.id}:${c}" aria-label="${c==='bank'?'ألوان البنك':'لون'}" aria-pressed="${(a.color||'bank')===c}" style="background:${c==='bank'?'conic-gradient(#4F008C,#07684B,#17418A,#4F008C)':'var(--'+c+')'}"></button>`).join('')}</div>`:''}
-      <div class="wtop"><span class="bk">${dom?`<span class="blogo"><img class="sl" src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" alt=""></span>`:''}${esc(a.bank)}</span><span class="net">${net}</span></div>
+      ${UI.netFor===a.id?`<div class="wsw wnet">${['visa','mastercard','mada','amex'].map(n=>`<button type="button" class="netbtn" data-setnet="${a.id}:${n}" aria-label="${NETS[n]}">${netLogo({network:n})}</button>`).join('')}<button type="button" class="netbtn" data-setnet="${a.id}:none" aria-label="بدون">✕</button></div>`:''}
+      <div class="wtop"><span class="bk">${dom?`<span class="blogo"><img class="sl" src="${favURL(dom,64)}" alt=""></span>`:''}${esc(a.bank)}</span><span class="net">${net}</span></div>
       <div class="wmid">${a.type==='cash'?'<span></span>':CHIP_SVG}
         <span class="wact"><button type="button" data-accgo="${a.id}" aria-label="العمليات" title="العمليات"><svg class="i" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg></button><button type="button" data-accedit="${a.id}" aria-label="تعديل" title="تعديل"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button type="button" data-acccolor="${a.id}" aria-label="اللون" title="اللون"><svg class="i" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-1.1-.9-1.4-.9-2.4 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4c0-4.7-4-8.4-9-8.4z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="11" cy="7.5" r="1.2"/><circle cx="15.5" cy="8.5" r="1.2"/></svg></button><button type="button" data-accimg="${a.id}" aria-label="${a.img?'غيّر الصورة':'صورة الكارت'}" title="${a.img?'غيّر الصورة':'صورة الكارت'}"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/></svg></button>${a.img?`<button type="button" data-accnoimg="${a.id}" aria-label="شيل الصورة" title="شيل الصورة"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 4l16 16"/></svg></button>`:''}<button type="button" data-del="accounts:${a.id}" aria-label="امسح الكارت" title="امسح"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></span>
         ${a.type==='credit'||a.type==='debit'?'<svg class="wnfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>':'<span></span>'}</div>
-      <div><div class="wbot"><div class="wleft"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.balance!=null?`<small>${a.type==='credit'?'المتاح':'الرصيد'} · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>${netLogo(a)}</div>
+      <div><div class="wbot"><div class="wleft"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.balance!=null?`<small>${a.type==='credit'?'المتاح':'الرصيد'} · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>${netOf(a)==='none'&&a.type!=='cash'?`<button type="button" class="addnet" data-netpick="${a.id}">+ فيزا / ماستر</button>`:netLogo(a)}</div>
       ${a.type==='credit'&&lim?(()=>{const used=a.balance!=null?Math.max(0,lim-a.balance):spent;return`<div class="wlim"><i style="width:${Math.min(100,used/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>مستخدم ${fmt(used)} من ${fmt(lim)}</span><span>${pct(used/lim*100)}</span></div>`})():''}</div>
     </div>`}).join(''):`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
   const up=S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).sort((a,b)=>a.next.localeCompare(b.next)).slice(0,3);
@@ -1367,7 +1376,7 @@ function potDetail(p){
 }
 const potsNow=()=>S.pots.reduce((a,p)=>a+potNow(p),0);
 function potWhere(p){
-  if(p.where&&p.where.startsWith('acc:')){const a=accById(p.where.slice(4));if(a)return{label:accShort(a),badge:(()=>{const d=bankDomain(a.bank);return d?`<span class="badge sq logo" style="--bc:var(--k-wine)"><img class="sl" src="https://www.google.com/s2/favicons?domain=${d}&sz=128" alt=""><span class="fb">${icon('تحويلات')}</span></span>`:`<span class="badge sq" style="background:var(--k-wine);color:#fff">${esc(initial(a.bank))}</span>`})()};
+  if(p.where&&p.where.startsWith('acc:')){const a=accById(p.where.slice(4));if(a)return{label:accShort(a),badge:(()=>{const d=bankDomain(a.bank);return d?`<span class="badge sq logo" style="--bc:var(--k-wine)"><img class="sl" src="${favURL(d,128)}" alt=""><span class="fb">${icon('تحويلات')}</span></span>`:`<span class="badge sq" style="background:var(--k-wine);color:#fff">${esc(initial(a.bank))}</span>`})()};
     return{label:'حساب اتمسح',badge:`<span class="badge sq" style="background:var(--k-other);color:#fff">؟</span>`}}
   const w=SV_WHERE[p.where]||SV_WHERE.other;
   return{label:w[0],badge:`<span class="badge sq" style="background:color-mix(in srgb,var(--${w[2]}) 20%,transparent);color:var(--${w[2]})"><svg class="i" viewBox="0 0 24 24">${w[1]}</svg></span>`};
@@ -1466,7 +1475,7 @@ const dbLeft=d=>Math.max(0,(+d.amount||0)-dbPaid(d));
 function dbName(d){const a=d.type==='credit'?accById(d.accountId):null;return d.name||(a?accShort(a):DB_TYPE[d.type]||'دين')}
 function dbBadge(d){
   const a=d.type==='credit'?accById(d.accountId):null;const dom=a?bankDomain(a.bank):(d.type==='loan'?bankDomain(d.name):'');
-  if(dom)return`<span class="badge sq logo" style="--bc:var(--k-wine)"><img class="sl" src="https://www.google.com/s2/favicons?domain=${dom}&sz=128" alt=""><span class="fb"><svg class="i" viewBox="0 0 24 24">${DB_ICON[d.type]||DB_ICON.other}</svg></span></span>`;
+  if(dom)return`<span class="badge sq logo" style="--bc:var(--k-wine)"><img class="sl" src="${favURL(dom,128)}" alt=""><span class="fb"><svg class="i" viewBox="0 0 24 24">${DB_ICON[d.type]||DB_ICON.other}</svg></span></span>`;
   if(d.type==='person')return`<span class="badge" style="background:color-mix(in srgb,${d.dir==='owed'?'var(--good)':'var(--k-move)'} 18%,transparent);color:${d.dir==='owed'?'var(--good)':'var(--k-move)'}">${esc(initial(d.name))}</span>`;
   return`<span class="badge sq" style="background:color-mix(in srgb,var(--k-wine) 16%,transparent);color:var(--brand-ink)"><svg class="i" viewBox="0 0 24 24">${DB_ICON[d.type]||DB_ICON.other}</svg></span>`;
 }
@@ -1999,6 +2008,11 @@ $('#pfRemovePhoto').onclick=()=>{act(store.saveSettings({profile:{...prof(),phot
 $('#profForm').onsubmit=async e=>{e.preventDefault();const p={...prof(),name:$('#pfName').value.trim(),job:$('#pfJob').value.trim(),salary:+$('#pfSalary').value||0,day:Math.min(31,Math.max(0,+$('#pfDay').value||0))};
   const f=$('#pfPhoto').files[0];if(f){try{p.photo=await shrinkSquare(f)}catch(err){toast('ماقدرتش أقرا الصورة')}}
   await act(store.saveSettings({profile:p}),'بياناتك اتحفظت');$('#profForm').hidden=true;renderProfile()};
+
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-netpick]');if(o){e.stopPropagation();UI.netFor=o.dataset.netpick;render();return}
+  const s=e.target.closest('[data-setnet]');if(s){e.stopPropagation();const[id,n]=s.dataset.setnet.split(':');UI.netFor=null;act(store.update('accounts',id,{network:n}),n==='none'?'اتشالت العلامة':'اتحطت علامة '+NETS[n]);return}
+},true);
 
 /* ---------- boot ---------- */
 localStore.load();
