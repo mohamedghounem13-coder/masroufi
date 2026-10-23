@@ -75,7 +75,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .monthpick .chev{position:absolute;left:10px;pointer-events:none;width:16px;height:16px}
 
 /* bottom nav */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:color-mix(in srgb,var(--surface) 68%,transparent);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
 .nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding-block:8px}
 .nav button span{font-size:.72rem}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -87,6 +87,13 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pin.on{opacity:1;filter:none}
 .nav button{appearance:none;border:0;background:none;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:14px;cursor:pointer;font-size:.72rem;min-width:0}
 .nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nav button{transition:background .35s cubic-bezier(.32,.72,0,1),color .25s,transform .2s}
+.nav button:active{transform:scale(.92)}
+.nav button svg.i{transition:transform .35s cubic-bezier(.32,.72,0,1)}
+.nav button[aria-selected="true"] svg.i{transform:translateY(-1px) scale(1.08)}
+.panel.enter{animation:panelIn .38s cubic-bezier(.32,.72,0,1)}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel.enter{animation:none}.sheet .body{transition:none}}
 .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--lime) 38%,transparent);color:var(--brand-ink);font-weight:600}
 
 /* controls */
@@ -301,7 +308,10 @@ th{font-weight:500;color:var(--faint);font-size:.76rem}
 .tablewrap{overflow-x:auto}
 
 /* sheet */
-.sheet{position:fixed;inset:0;z-index:30;background:rgb(0 0 0/.35);display:flex;align-items:flex-end;justify-content:center}
+.sheet{position:fixed;inset:0;z-index:30;background:rgb(0 0 0/0);display:flex;align-items:flex-end;justify-content:center;visibility:hidden;pointer-events:none;transition:background .3s ease,visibility 0s linear .45s}
+.sheet.open{visibility:visible;pointer-events:auto;background:rgb(0 0 0/.32);transition:background .3s ease}
+.sheet .body{transform:translateY(105%);transition:transform .45s cubic-bezier(.32,.72,0,1);will-change:transform;background:color-mix(in srgb,var(--bg) 84%,transparent)!important;-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);box-shadow:0 -10px 40px rgb(0 0 0/.18)}
+.sheet.open .body{transform:none}
 .sheet .body{background:var(--bg);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow:auto}
 .sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:0 auto}
 .bigamt{display:flex;align-items:baseline;gap:8px;background:var(--surface);border-radius:18px;padding:14px 16px}
@@ -687,7 +697,7 @@ svg text{font-family:var(--body)}
 </div>
 
 <!-- add sheet -->
-<div class="sheet" id="sheet" hidden dir="rtl" lang="ar">
+<div class="sheet" id="sheet" dir="rtl" lang="ar" aria-hidden="true">
   <form class="body" id="txForm">
     <div class="grab"></div>
     <div class="row between"><h2 style="font-size:1.2rem">حركة جديدة</h2><button type="button" class="btn x" id="sheetClose" aria-label="اقفل">✕</button></div>
@@ -703,7 +713,7 @@ svg text{font-family:var(--body)}
   </form>
 </div>
 
-<div class="sheet" id="moreSheet" hidden dir="rtl" lang="ar">
+<div class="sheet" id="moreSheet" dir="rtl" lang="ar" aria-hidden="true">
   <div class="body">
     <div class="grab"></div>
     <div class="row between"><h2 style="font-size:1.2rem">كل الأقسام</h2><button type="button" class="btn x" id="moreClose" aria-label="اقفل">✕</button></div>
@@ -1449,7 +1459,7 @@ function render(){
 
 /* ---------- events ---------- */
 function setTab(t){hidePriv();UI.tab=t;markNav();
-  Object.keys(TITLES).forEach(k=>$('#p-'+k).hidden=k!==t);$('#pageTitle').textContent=TITLES[t];
+  Object.keys(TITLES).forEach(k=>$('#p-'+k).hidden=k!==t);{const p=$('#p-'+t);p.classList.remove('enter');void p.offsetWidth;p.classList.add('enter')}$('#pageTitle').textContent=TITLES[t];
   try{localStorage.setItem(LS+'.tab',t)}catch(e){}window.scrollTo(0,0)}
 $('#monthSel').onchange=e=>{curMonth=e.target.value;render()};
 
@@ -1463,11 +1473,11 @@ $('#aColor').addEventListener('click',e=>{const b=e.target.closest('button');if(
 ['#txDate','#flDate','#sNext'].forEach(s=>$(s).value=todayISO());
 
 // sheet
-function openSheet(){$('#sheet').hidden=false;$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
-function closeSheet(){$('#sheet').hidden=true}
+function openSheet(){showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
+function closeSheet(){hideSheet('#sheet')}
 $('#sheetClose').onclick=closeSheet;
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet').hidden)closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classList.contains('open'))closeSheet()});
 $('#txForm').onsubmit=e=>{e.preventDefault();const amount=+$('#txAmt').value;if(!(amount>0))return;
   act(store.add('tx',{type:UI.txType,amount,category:UI.txCat,note:$('#txNote').value.trim(),date:$('#txDate').value,accountId:$('#txAcc').value||'',source:'manual',ts:Date.now()}),'اتضاف');
   $('#txAmt').value='';$('#txNote').value='';closeSheet()};
@@ -1703,7 +1713,7 @@ $('#accImgEdit').addEventListener('change',async e=>{const f=e.target.files[0];e
   ind.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>';
   document.body.appendChild(ind);
   let y0=null,dy=0,busy=false;const MAX=110,TRIG=70;
-  const blocked=()=>!$('#sheet').hidden;
+  const blocked=()=>$('#sheet').classList.contains('open');
   window.addEventListener('touchstart',e=>{if(busy||blocked()||window.scrollY>0||e.touches.length!==1){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
   window.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);if(window.scrollY>0){y0=null;dy=0}
     const d=Math.min(MAX,dy*.5);ind.style.transition='none';ind.style.opacity=Math.min(1,d/TRIG);ind.style.transform=`translateY(${d-40}px) rotate(${d*3}deg)`},{passive:true});
@@ -1779,8 +1789,8 @@ function buildNav(){const pins=getPins();
   document.querySelector('.nav .in').innerHTML=pins.map(k=>{const t=NAV_ALL.find(x=>x.k===k);return`<button role="tab" data-tab="${k}" aria-selected="false">${t.icon}<span>${t.label}</span></button>`}).join('')+`<button type="button" data-more aria-selected="false">${MORE_ICON}<span>المزيد</span></button>`;markNav()}
 function renderMore(){const pins=getPins();
   $('#moreTiles').innerHTML=NAV_ALL.map(t=>`<div class="tile${t.k===UI.tab?' cur':''}"><button type="button" class="tgo" data-go="${t.k}">${t.icon}<span>${t.label}</span></button><button type="button" class="pin${pins.includes(t.k)?' on':''}" data-pin="${t.k}" aria-label="${pins.includes(t.k)?'شيله من الشريط':'ثبّته في الشريط'}">📌</button></div>`).join('')}
-function openMore(){renderMore();$('#moreSheet').hidden=false}
-function closeMore(){$('#moreSheet').hidden=true}
+function openMore(){renderMore();showSheet('#moreSheet')}
+function closeMore(){hideSheet('#moreSheet')}
 document.querySelector('.nav .in').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){setTab(b.dataset.tab);return}if(e.target.closest('[data-more]'))openMore()});
 $('#moreClose').onclick=closeMore;
 $('#moreSheet').addEventListener('click',e=>{if(e.target.id==='moreSheet'){closeMore();return}
@@ -1789,8 +1799,17 @@ $('#moreSheet').addEventListener('click',e=>{if(e.target.id==='moreSheet'){close
     if(pins.includes(k)){if(pins.length===1){toast('لازم يفضل قسم واحد على الأقل');return}pins=pins.filter(x=>x!==k)}
     else{if(pins.length>=4){toast('الشريط فيه 4 أقسام. شيل 📌 من واحد الأول');return}pins=NAV_ALL.map(t=>t.k).filter(x=>pins.includes(x)||x===k)}
     setPins(pins)}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#moreSheet').hidden)closeMore()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#moreSheet').classList.contains('open'))closeMore()});
 buildNav();
+
+/* ---------- sliding sheets (drag down to close) ---------- */
+function showSheet(sel){const s=$(sel);s.setAttribute('aria-hidden','false');s.querySelector('.body').style.transform='';requestAnimationFrame(()=>s.classList.add('open'))}
+function hideSheet(sel){const s=$(sel);s.classList.remove('open');s.setAttribute('aria-hidden','true');s.querySelector('.body').style.transform=''}
+document.querySelectorAll('.sheet').forEach(s=>{const b=s.querySelector('.body');let y0=null,dy=0;
+  b.addEventListener('touchstart',e=>{if(b.scrollTop>0||e.target.closest('input,select,textarea')){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
+  b.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);b.style.transition='none';b.style.transform=`translateY(${dy}px)`},{passive:true});
+  b.addEventListener('touchend',()=>{if(y0==null)return;y0=null;b.style.transition='';if(dy>90)hideSheet('#'+s.id);else b.style.transform='';dy=0});
+});
 
 /* ---------- boot ---------- */
 localStore.load();
