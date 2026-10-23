@@ -161,7 +161,7 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 
 /* accounts: Apple-Wallet-style stack */
 .wallet{display:flex;flex-direction:column}
-.wcard{position:relative;width:100%;aspect-ratio:1.586/1;border-radius:20px;padding:18px 20px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 88%,#fff) 0%,var(--ac) 45%,color-mix(in srgb,var(--ac) 58%,#000) 100%);box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 -2px 10px rgb(0 0 0/.10),0 8px 20px rgb(0 0 0/.16);display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;overflow:hidden;transition:margin-top .38s cubic-bezier(.2,.8,.2,1)}
+.wcard{position:relative;isolation:isolate;z-index:0;width:100%;aspect-ratio:1.586/1;border-radius:20px;padding:18px 20px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 88%,#fff) 0%,var(--ac) 45%,color-mix(in srgb,var(--ac) 58%,#000) 100%);box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 -2px 10px rgb(0 0 0/.10),0 8px 20px rgb(0 0 0/.16);display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;overflow:hidden;transition:margin-top .38s cubic-bezier(.2,.8,.2,1)}
 .wcard+.wcard{margin-top:calc(-63.05% + 60px)}
 .wcard.open+.wcard{margin-top:14px}
 .wcard::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 90% -10%,rgb(255 255 255/.28),transparent 55%);pointer-events:none}
@@ -183,6 +183,9 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 .wact{display:none;gap:8px}
 .wcard.open .wact{display:flex}
 .wact button{border:0;border-radius:10px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;background:rgb(255 255 255/.2);color:#fff}
+.wsw{position:absolute;inset:auto 12px 12px 12px;z-index:3;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:rgb(0 0 0/.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:14px;padding:10px}
+.wsw button{width:28px;height:28px;border-radius:50%;border:2px solid rgb(255 255 255/.6);cursor:pointer;padding:0}
+.wsw button[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px rgb(255 255 255/.5)}
 .wcard:focus-visible{outline:3px solid var(--brand-ink);outline-offset:3px}
 .blogo{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;background:#fff;margin-inline-end:8px;vertical-align:-7px;overflow:hidden}
 .blogo img{width:18px;height:18px;object-fit:contain}
@@ -897,9 +900,10 @@ function renderHome(d){
     const net={credit:'CREDIT',debit:'mada',wallet:'PAY',cash:'CASH'}[a.type]||'';
     const look=cardLook(a);const dom=bankDomain(a.bank);
     return`<div class="wcard${UI.openAcc===a.id?' open':''}${a.img?' art':''}" role="button" tabindex="0" data-accopen="${a.id}" aria-expanded="${UI.openAcc===a.id}" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${look}">
+      ${UI.colorFor===a.id&&UI.openAcc===a.id?`<div class="wsw">${['bank',...SWATCH].map(c=>`<button type="button" data-setcolor="${a.id}:${c}" aria-label="${c==='bank'?'ألوان البنك':'لون'}" aria-pressed="${(a.color||'bank')===c}" style="background:${c==='bank'?'conic-gradient(#4F008C,#07684B,#17418A,#4F008C)':'var(--'+c+')'}"></button>`).join('')}</div>`:''}
       <div class="wtop"><span class="bk">${dom?`<span class="blogo"><img class="sl" src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" alt=""></span>`:''}${esc(a.bank)}</span><span class="net">${net}</span></div>
       <div class="wmid">${a.type==='cash'?'<span></span>':'<span class="wchip"></span>'}
-        <span class="wact"><button type="button" data-accgo="${a.id}">العمليات</button><button type="button" data-accimg="${a.id}">${a.img?'غيّر الصورة':'صورة الكارت'}</button>${a.img?`<button type="button" data-accnoimg="${a.id}">شيل الصورة</button>`:''}<button type="button" data-del="accounts:${a.id}">امسح</button></span>
+        <span class="wact"><button type="button" data-accgo="${a.id}">العمليات</button><button type="button" data-acccolor="${a.id}">اللون</button><button type="button" data-accimg="${a.id}">${a.img?'غيّر الصورة':'صورة الكارت'}</button>${a.img?`<button type="button" data-accnoimg="${a.id}">شيل الصورة</button>`:''}<button type="button" data-del="accounts:${a.id}">امسح</button></span>
         ${a.type==='credit'||a.type==='debit'?'<svg class="wnfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>':'<span></span>'}</div>
       <div><div class="wbot"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp"><small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b> <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>
       ${a.type==='credit'&&lim?`<div class="wlim"><i style="width:${Math.min(100,spent/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>من حد ${fmt(lim)}</span><span>${pct(spent/lim*100)}</span></div>`:''}</div>
@@ -1258,6 +1262,8 @@ $('#subForm').addEventListener('submit',()=>{UI.kindTouched=false;setTimeout(()=
 document.addEventListener('click',e=>{
   const cf=e.target.closest('[data-catf]');if(cf){UI.filter=cf.dataset.catf;render();return}
   if(e.target.closest('[data-accgo],[data-del]'))return;
+  const acc=e.target.closest('[data-acccolor]');if(acc){UI.colorFor=UI.colorFor===acc.dataset.acccolor?null:acc.dataset.acccolor;render();return}
+  const sc=e.target.closest('[data-setcolor]');if(sc){const[id,c]=sc.dataset.setcolor.split(':');UI.colorFor=null;act(store.update('accounts',id,{color:c,img:''}),'اللون اتغيّر');return}
   const ai=e.target.closest('[data-accimg]');if(ai){UI.imgFor=ai.dataset.accimg;$('#accImgEdit').click();return}
   const an=e.target.closest('[data-accnoimg]');if(an){act(store.update('accounts',an.dataset.accnoimg,{img:''}),'الصورة اتشالت');return}
   const ao=e.target.closest('[data-accopen]');if(ao){UI.openAcc=UI.openAcc===ao.dataset.accopen?null:ao.dataset.accopen;render()}
