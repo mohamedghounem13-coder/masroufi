@@ -353,7 +353,7 @@ svg text{font-family:var(--body)}
           <label>النوع<select id="aType"><option value="credit">بطاقة ائتمانية (كريديت)</option><option value="debit">حساب جاري / مدى (ديبيت)</option><option value="wallet">محفظة (STC Pay، urpay...)</option><option value="cash">كاش</option></select></label>
           <label>آخر 4 أرقام<input id="aLast4" inputmode="numeric" maxlength="4" placeholder="4821"></label>
           <label id="aLimitWrap">حد الكارت (اختياري)<input id="aLimit" type="number" min="0" step="100" inputmode="decimal"></label>
-          <label id="aBalWrap" hidden>الرصيد اللي فيه دلوقتي (اختياري)<input id="aBal" type="number" step="any" inputmode="decimal"></label>
+          <label id="aBalWrap"><span id="aBalLbl">الرصيد اللي فيه دلوقتي (اختياري)</span><input id="aBal" type="number" step="any" inputmode="decimal"></label>
           <label>صورة الكارت (اختياري)<input id="aImg" type="file" accept="image/*"></label>
           <input id="accImgEdit" type="file" accept="image/*" hidden>
           <button class="btn primary" id="accSubmit">ضيف</button>
@@ -1055,8 +1055,8 @@ function renderHome(d){
       <div class="wmid">${a.type==='cash'?'<span></span>':'<span class="wchip"></span>'}
         <span class="wact"><button type="button" data-accgo="${a.id}">العمليات</button><button type="button" data-accedit="${a.id}">تعديل</button><button type="button" data-acccolor="${a.id}">اللون</button><button type="button" data-accimg="${a.id}">${a.img?'غيّر الصورة':'صورة الكارت'}</button>${a.img?`<button type="button" data-accnoimg="${a.id}">شيل الصورة</button>`:''}<button type="button" data-del="accounts:${a.id}">امسح</button></span>
         ${a.type==='credit'||a.type==='debit'?'<svg class="wnfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>':'<span></span>'}</div>
-      <div><div class="wbot"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.type!=='credit'&&a.balance!=null?`<small>الرصيد · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>
-      ${a.type==='credit'&&lim?`<div class="wlim"><i style="width:${Math.min(100,spent/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>من حد ${fmt(lim)}</span><span>${pct(spent/lim*100)}</span></div>`:''}</div>
+      <div><div class="wbot"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.balance!=null?`<small>${a.type==='credit'?'المتاح':'الرصيد'} · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>
+      ${a.type==='credit'&&lim?(()=>{const used=a.balance!=null?Math.max(0,lim-a.balance):spent;return`<div class="wlim"><i style="width:${Math.min(100,used/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>مستخدم ${fmt(used)} من ${fmt(lim)}</span><span>${pct(used/lim*100)}</span></div>`})():''}</div>
     </div>`}).join(''):`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
   const up=S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).sort((a,b)=>a.next.localeCompare(b.next)).slice(0,3);
   $('#homeSubsWrap').hidden=!up.length;
@@ -1467,12 +1467,12 @@ $('#txAcc').onchange=e=>setDefAcc(e.target.value);
 
 // accounts
 $('#accToggle').onclick=()=>{const d=$('#accAdd');d.open=!d.open;if(d.open)$('#aBank').focus()};
-const accTypeUI=()=>{const c=$('#aType').value==='credit';$('#aLimitWrap').hidden=!c;$('#aBalWrap').hidden=c};$('#aType').onchange=accTypeUI;accTypeUI();
+const accTypeUI=()=>{const c=$('#aType').value==='credit';$('#aLimitWrap').hidden=!c;$('#aBalLbl').textContent=c?'الرصيد المتاح دلوقتي (اختياري)':'الرصيد اللي فيه دلوقتي (اختياري)'};$('#aType').onchange=accTypeUI;accTypeUI();
 $('#accForm').onsubmit=e=>{e.preventDefault();const last4=normDigits($('#aLast4').value.trim());
   if(last4&&!/^\d{4}$/.test(last4)){toast('اكتب آخر 4 أرقام بس');return}
   const type=$('#aType').value;
   const data={bank:$('#aBank').value.trim(),type,last4,limit:type==='credit'?(+$('#aLimit').value||0):0,color:UI.accColor};
-  if(type!=='credit'&&$('#aBal').value!==''){data.balance=+$('#aBal').value;data.balanceDate=todayISO()}else if(type!=='credit'&&UI.editAcc){data.balance=null}
+  if($('#aBal').value!==''){data.balance=+$('#aBal').value;data.balanceDate=todayISO()}else if(UI.editAcc){data.balance=null}
   if(UI.pendingImg)data.img=UI.pendingImg;
   if(UI.editAcc){act(store.update('accounts',UI.editAcc,data),'الكارت اتعدّل');resetAccForm();$('#accAdd').open=false;return}
   act(store.add('accounts',{...data,img:UI.pendingImg||'',ts:Date.now()}),'الحساب اتضاف');UI.pendingImg='';$('#aImg').value='';
