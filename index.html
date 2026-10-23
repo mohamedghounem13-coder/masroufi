@@ -76,8 +76,15 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 
 /* bottom nav */
 .nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
-.nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding-block:8px}
-.nav button span{font-size:.66rem}
+.nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding-block:8px}
+.nav button span{font-size:.72rem}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{position:relative;background:var(--surface);border-radius:18px}
+.tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
+.tgo{appearance:none;border:0;background:none;width:100%;padding:18px 6px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;color:var(--fg);font:inherit;font-size:.86rem;font-weight:600}
+.tgo svg.i{width:26px;height:26px;color:var(--brand-ink)}
+.pin{position:absolute;top:4px;inset-inline-end:4px;border:0;background:none;cursor:pointer;font-size:.8rem;opacity:.25;filter:grayscale(1);padding:4px}
+.pin.on{opacity:1;filter:none}
 .nav button{appearance:none;border:0;background:none;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:14px;cursor:pointer;font-size:.72rem;min-width:0}
 .nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--lime) 38%,transparent);color:var(--brand-ink);font-weight:600}
@@ -696,6 +703,14 @@ svg text{font-family:var(--body)}
   </form>
 </div>
 
+<div class="sheet" id="moreSheet" hidden dir="rtl" lang="ar">
+  <div class="body">
+    <div class="grab"></div>
+    <div class="row between"><h2 style="font-size:1.2rem">كل الأقسام</h2><button type="button" class="btn x" id="moreClose" aria-label="اقفل">✕</button></div>
+    <div class="tiles" id="moreTiles"></div>
+    <p class="muted small" style="margin:0">دوس 📌 عشان تثبّت القسم في الشريط اللي تحت (لحد 4 أقسام).</p>
+  </div>
+</div>
 <nav class="nav" role="tablist" dir="rtl" lang="ar"><div class="in">
   <button role="tab" data-tab="home" aria-selected="true"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h13a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-1"/><path d="M6 6l9-3 1 3"/></svg><span>الرئيسية</span></button>
   <button role="tab" data-tab="tx" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>العمليات</span></button>
@@ -1433,10 +1448,9 @@ function render(){
 }
 
 /* ---------- events ---------- */
-function setTab(t){hidePriv();document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+function setTab(t){hidePriv();UI.tab=t;markNav();
   Object.keys(TITLES).forEach(k=>$('#p-'+k).hidden=k!==t);$('#pageTitle').textContent=TITLES[t];
   try{localStorage.setItem(LS+'.tab',t)}catch(e){}window.scrollTo(0,0)}
-document.querySelectorAll('.nav [data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 $('#monthSel').onchange=e=>{curMonth=e.target.value;render()};
 
 function seg(id,key,after){const el=$(id);el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;UI[key]=b.dataset.v;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));after&&after(b.dataset.v)})}
@@ -1754,6 +1768,29 @@ $('#bkImport').onchange=async e=>{
 (function(){const set=v=>{document.documentElement.classList.toggle('f-lalezar',v==='lalezar');try{localStorage.setItem(LS+'.font',v)}catch(e){}};
   let v='alexandria';try{v=localStorage.getItem(LS+'.font')||'alexandria'}catch(e){}set(v);
   $('#fontToggle').onclick=()=>{v=v==='lalezar'?'alexandria':'lalezar';set(v);toast(v==='lalezar'?'الخط: لاله‌زار (الجديد)':'الخط: الأصلي')};})();
+
+/* ---------- bottom bar: 4 pinned sections + "more" ---------- */
+const NAV_ALL=[...document.querySelectorAll('.nav [data-tab]')].map(b=>({k:b.dataset.tab,icon:b.querySelector('svg').outerHTML,label:b.querySelector('span').textContent}));
+const MORE_ICON='<svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/></svg>';
+function getPins(){try{const p=JSON.parse(localStorage.getItem(LS+'.pins'));if(Array.isArray(p)&&p.length)return p.filter(k=>NAV_ALL.some(t=>t.k===k)).slice(0,4)}catch(e){}return['home','tx','stats','save']}
+function setPins(p){try{localStorage.setItem(LS+'.pins',JSON.stringify(p))}catch(e){}buildNav();renderMore()}
+function markNav(){const pins=getPins();document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===UI.tab));const m=document.querySelector('.nav [data-more]');if(m)m.setAttribute('aria-selected',!!UI.tab&&!pins.includes(UI.tab))}
+function buildNav(){const pins=getPins();
+  document.querySelector('.nav .in').innerHTML=pins.map(k=>{const t=NAV_ALL.find(x=>x.k===k);return`<button role="tab" data-tab="${k}" aria-selected="false">${t.icon}<span>${t.label}</span></button>`}).join('')+`<button type="button" data-more aria-selected="false">${MORE_ICON}<span>المزيد</span></button>`;markNav()}
+function renderMore(){const pins=getPins();
+  $('#moreTiles').innerHTML=NAV_ALL.map(t=>`<div class="tile${t.k===UI.tab?' cur':''}"><button type="button" class="tgo" data-go="${t.k}">${t.icon}<span>${t.label}</span></button><button type="button" class="pin${pins.includes(t.k)?' on':''}" data-pin="${t.k}" aria-label="${pins.includes(t.k)?'شيله من الشريط':'ثبّته في الشريط'}">📌</button></div>`).join('')}
+function openMore(){renderMore();$('#moreSheet').hidden=false}
+function closeMore(){$('#moreSheet').hidden=true}
+document.querySelector('.nav .in').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){setTab(b.dataset.tab);return}if(e.target.closest('[data-more]'))openMore()});
+$('#moreClose').onclick=closeMore;
+$('#moreSheet').addEventListener('click',e=>{if(e.target.id==='moreSheet'){closeMore();return}
+  const g=e.target.closest('[data-go]');if(g){closeMore();setTab(g.dataset.go);return}
+  const p=e.target.closest('[data-pin]');if(p){const k=p.dataset.pin;let pins=getPins();
+    if(pins.includes(k)){if(pins.length===1){toast('لازم يفضل قسم واحد على الأقل');return}pins=pins.filter(x=>x!==k)}
+    else{if(pins.length>=4){toast('الشريط فيه 4 أقسام. شيل 📌 من واحد الأول');return}pins=NAV_ALL.map(t=>t.k).filter(x=>pins.includes(x)||x===k)}
+    setPins(pins)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#moreSheet').hidden)closeMore()});
+buildNav();
 
 /* ---------- boot ---------- */
 localStore.load();
