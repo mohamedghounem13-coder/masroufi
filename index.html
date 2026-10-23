@@ -193,6 +193,15 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 .plrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--soft)}
 .plbar{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
 .plbar i{display:block;height:100%}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold .chev{transition:transform .3s cubic-bezier(.32,.72,0,1)}
+details.fold[open] .chev{transform:rotate(180deg)}
+[data-priv]{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+[data-priv]>*{transition:filter .3s}
+[data-priv]:not(.shown)>*{filter:blur(11px);user-select:none;-webkit-user-select:none;pointer-events:none}
+[data-priv]:not(.shown)::after{content:"اضغط عشان تشوف";position:absolute;inset:0;display:grid;place-items:center;font-family:var(--body);font-size:.85rem;font-weight:600;letter-spacing:0}
+.hero [data-priv]:not(.shown)::after{justify-items:start}
 .potwrap{background:var(--surface);border-radius:18px;overflow:hidden}
 .potwrap>.item{background:none}
 .potdet{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--soft);padding-top:12px}
@@ -461,14 +470,16 @@ svg text{font-family:var(--body)}
   <section class="panel" id="p-save" hidden>
     <div class="hero">
       <div class="lbl"><span>محوّش معاك</span><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M19 10c0-3.3-3.1-6-7-6S5 6.7 5 10c0 2 1.1 3.7 2.8 4.8V18h2.4v-1.4h3.6V18h2.4v-3.2C17.9 13.7 19 12 19 10z"/><circle cx="14.5" cy="9" r=".7"/></svg></span></div>
-      <div class="big" id="svNow"></div>
+      <div class="big" id="svNow" data-priv="svNow" role="button" tabindex="0" aria-label="اضغط عشان تشوف المبلغ"></div>
       <div class="meter" id="svMeterWrap"><i id="svMeter" style="width:0"></i></div>
       <div class="foot"><span id="svFootA"></span><span id="svFootB"></span></div>
     </div>
 
 
-    <div class="sect"><h2>فلوسك المتحوّشة فين</h2></div>
-    <div class="list" id="svPots"></div>
+    <details class="fold" id="svPotsFold">
+      <summary><h2>فلوسك المتحوّشة فين</h2><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <div data-priv="pots" role="button" tabindex="0" aria-label="اضغط عشان تشوف"><div class="list" id="svPots"></div></div>
+    </details>
 
     <details class="add" id="svAdd">
       <summary id="svFormTitle">إضافة تحويش</summary>
@@ -547,13 +558,17 @@ svg text{font-family:var(--body)}
       <div class="inner">
         <form id="flForm" class="fields">
           <label>العميل<input id="flClient" required placeholder="اسم العميل أو المنصة"></label>
-          <label>المشروع<input id="flProject" placeholder="مثلاً: تصميم، موقع"></label>
+          <label>المجال<select id="flField"></select></label>
+          <label>نوع الشغل<select id="flKind"><option value="photo">تصوير فوتو</option><option value="video">فيديو</option><option value="both">فوتو وفيديو</option></select></label>
+          <label>المشروع<input id="flProject" placeholder="مثلاً: كامبين شتوي"></label>
           <label>المبلغ<input id="flAmt" type="number" min="0" step="0.01" inputmode="decimal" required></label>
           <label>العملة<select id="flCur"><option value="USD">دولار $</option><option value="SAR">ريال</option><option value="EUR">يورو €</option><option value="AED">درهم</option><option value="EGP">جنيه مصري</option></select></label>
           <label id="flRateWrap">سعر التحويل للريال<input id="flRate" type="number" min="0" step="0.0001" inputmode="decimal"></label>
           <label>عمولة المنصة/التحويل<input id="flFee" type="number" min="0" step="0.01" inputmode="decimal" placeholder="بنفس العملة"></label>
           <label>التاريخ<input id="flDate" type="date" required></label>
           <label>الحالة<select id="flStatus"><option value="paid">اتقبضت</option><option value="pending">لسه مستني</option></select></label>
+          <label class="check" style="grid-column:1/-1"><input type="checkbox" id="flToSave"> ضيف المبلغ ده على التحويش</label>
+          <label id="flSavePotWrap" hidden>في أنهي تحويش؟<select id="flSavePot"></select></label>
           <button class="btn primary">ضيف</button>
         </form>
         <label class="check"><input type="checkbox" id="flInIncome"> احسب فلوس الفريلانس ضمن دخلي في الرئيسية</label>
@@ -561,6 +576,7 @@ svg text{font-family:var(--body)}
     </details>
     <div class="sect"><h2>مستني فلوسه</h2></div>
     <div class="list" id="flPending"></div>
+    <div class="card"><h2>دخلك حسب المجال</h2><div class="pllegend" id="flKindSplit"></div><div class="cats" id="flFields"></div></div>
     <div class="card"><h2 id="flClientsTitle"></h2><div class="cats" id="flClients"></div></div>
     <div class="sect"><h2 id="flListTitle"></h2></div>
     <div class="list" id="flList"></div>
@@ -1199,12 +1215,36 @@ function renderSave(){
   if(a!==$('#svGoalAmtIn'))$('#svGoalAmtIn').value=goal||'';
 }
 
+const FL_FIELDS=['فاشن','ضيافة وفنادق','أكل ومطاعم','عقارات','سيارات','أعراس ومناسبات','شركات وكوربوريت','منتجات وإعلانات','جمال وتجميل','رياضة','سفر وسياحة','موسيقى وفن','تاني'];
+const FL_KIND={photo:'فوتو',video:'فيديو',both:'فوتو وفيديو'};
+const FL_FIELD_COLOR=['k-shop','k-gold','k-food','k-navy','k-ink','k-fun','k-move','k-bill','k-sub','k-groc','k-health','k-wine','k-other'];
+const flFieldColor=f=>`var(--${FL_FIELD_COLOR[FL_FIELDS.indexOf(f)]||'k-other'})`;
+UI.reveal={};
+function applyPriv(){document.querySelectorAll('[data-priv]').forEach(el=>{const s=!!UI.reveal[el.dataset.priv];el.classList.toggle('shown',s);el.setAttribute('aria-label',s?'':'اضغط عشان تشوف')})}
+function hidePriv(){UI.reveal={};applyPriv()}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-priv]');if(!el)return;const k=el.dataset.priv;
+  if(!UI.reveal[k]){UI.reveal[k]=true;applyPriv();e.stopPropagation();e.preventDefault()}else if(k==='svNow'){UI.reveal[k]=false;applyPriv()}},true);
+document.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.closest('[data-priv]');if(el&&e.target===el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();UI.reveal[el.dataset.priv]=!UI.reveal[el.dataset.priv];applyPriv()}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)hidePriv()});
+const flSaved=f=>S.savings.some(s=>s.flId===f.id);
+function fillFlSavePot(){const sel=$('#flSavePot');if(document.activeElement===sel)return;const v=sel.value;
+  sel.innerHTML=S.pots.map(p=>`<option value="${p.id}">${esc(potWhere(p).label)}${p.note?' · '+esc(p.note):''}</option>`).join('')+`<option value="__new">تحويش جديد للفريلانس</option>`;
+  const fp=S.pots.find(p=>p.source==='freelance');sel.value=v&&[...sel.options].some(o=>o.value===v)?v:(fp?fp.id:sel.options[0].value);}
+async function ensurePot(pid){
+  if(pid&&pid!=='__new'&&S.pots.some(p=>p.id===pid))return pid;
+  const ex=S.pots.find(p=>p.source==='freelance'&&p.note==='فلوس الفريلانس');if(ex)return ex.id;
+  await store.add('pots',{where:'other',source:'freelance',start:0,startDate:todayISO(),monthly:0,note:'فلوس الفريلانس',ts:Date.now()});
+  return S.pots[S.pots.length-1].id;
+}
+async function flToSavings(f,pid){if(flSaved(f))return;const potId=await ensurePot(pid||f.savePot);
+  await store.add('savings',{potId,amount:Math.round(flSar(f)*100)/100,kind:'in',date:f.date||todayISO(),note:'فريلانس: '+(f.client||''),flId:f.id,ts:Date.now()});
+  if(f.savePot!==potId)await store.update('freelance',f.id,{toSave:true,savePot:potId});}
 function flItem(f){
   const cur=f.currency==='SAR'?'':` · ${fmt(f.amount)} ${esc(f.currency)}`;
-  return`<div class="item"><span class="badge" style="background:color-mix(in srgb,var(--k-bill) 18%,transparent);color:var(--k-bill)">${esc(initial(f.client))}</span>
-  <div class="what"><b>${esc(f.client)}${f.project?' · '+esc(f.project):''}</b><span>${dayLabel(f.date)}${cur}${+f.fee?` · عمولة ${fmt(f.fee)}`:''}</span></div>
+  return`<div class="item"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
+  <div class="what"><b>${esc(f.client)}${f.project?' · '+esc(f.project):''}</b><span>${f.field?esc(f.field)+' · ':''}${f.kind?FL_KIND[f.kind]+' · ':''}${dayLabel(f.date)}${cur}${+f.fee?` · عمولة ${fmt(f.fee)}`:''}</span></div>
   <div class="end"><span class="amt">${amtHTML(flSar(f))}</span>${f.status==='paid'?'<span class="chip good">اتقبضت</span>':'<span class="chip warn">مستني</span>'}</div>
-  <span class="row" style="gap:0;flex-wrap:nowrap">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:''}<button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
+  <span class="row" style="gap:0;flex-wrap:nowrap">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:flSaved(f)?'<span class="chip good">في التحويش</span>':`<button class="btn tiny" data-fl2save="${f.id}">للتحويش</button>`}<button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
 }
 function renderFreelance(){
   const y=curMonth.slice(0,4);
@@ -1212,12 +1252,16 @@ function renderFreelance(){
   const pend=S.freelance.filter(f=>f.status==='pending');
   const paidY=S.freelance.filter(f=>f.status==='paid'&&(f.date||'').startsWith(y));
   const mTot=paidM.reduce((a,f)=>a+flSar(f),0),pTot=pend.reduce((a,f)=>a+flSar(f),0),yTot=paidY.reduce((a,f)=>a+flSar(f),0);
-  $('#flHeroLabel').textContent='قبضت فريلانس في '+monthName(curMonth);
-  $('#flBig').innerHTML=bigMoney(mTot);
-  $('#flSub').innerHTML=paidM.length?`${nf0.format(paidM.length)} شغلانة · صافي بعد العمولات`:'سجّل الشغل اللي خلّصته، وعلّم عليه لما الفلوس توصل.';
+  $('#flHeroLabel').textContent='إجمالي الفريلانس';const allTot=S.freelance.filter(f=>f.status==='paid').reduce((a,f)=>a+flSar(f),0);fillFlSavePot();
+  $('#flBig').innerHTML=bigMoney(allTot);
+  $('#flSub').innerHTML=paidM.length?`في ${monthName(curMonth)}: ${money(mTot)} من ${nf0.format(paidM.length)} شغلانة · صافي بعد العمولات`:'سجّل الشغل اللي خلّصته، وعلّم عليه لما الفلوس توصل.';
   $('#flPend').innerHTML=amtHTML(pTot);$('#flYearLbl').textContent='إجمالي '+nf0.format(+y).replace(/٬/g,'');$('#flYear').innerHTML=amtHTML(yTot);
   const cl={};paidY.forEach(f=>{const k=(f.client||'').trim()||'بدون اسم';cl[k]=(cl[k]||0)+flSar(f)});
   const arr=Object.entries(cl).sort((a,b)=>b[1]-a[1]).slice(0,6);const amax=arr.length?arr[0][1]:1;
+  const fd={};paidY.forEach(f=>{const k=f.field||'تاني';fd[k]=(fd[k]||0)+flSar(f)});const fa=Object.entries(fd).sort((a,b)=>b[1]-a[1]);const fmax=fa.length?fa[0][1]:1;
+  $('#flFields').innerHTML=fa.length?fa.map(([c,v])=>`<div class="cat" style="grid-template-columns:12px 1fr auto"><span class="dot" style="background:${flFieldColor(c)}"></span><div style="min-width:0"><div class="row between" style="flex-wrap:nowrap"><span>${esc(c)}</span><span class="muted small">${pct(v/yTot*100)}</span></div><div class="bar6"><i style="width:${(v/fmax*100).toFixed(1)}%;background:${flFieldColor(c)}"></i></div></div><span class="amt" style="font-size:.92rem">${amtHTML(v)}</span></div>`).join(''):emptyBox('اختار المجال وإنت بتسجّل الشغل وهيظهر هنا.');
+  const kd={photo:0,video:0,both:0};paidY.forEach(f=>{if(f.kind)kd[f.kind]+=flSar(f)});
+  $('#flKindSplit').innerHTML=Object.entries(kd).filter(([,v])=>v).map(([k,v])=>`<span>${FL_KIND[k]}: <b>${fmt(v)}</b> ر.س</span>`).join('');
   $('#flClientsTitle').textContent='أكتر العملاء دفعاً';
   $('#flClients').innerHTML=arr.length?arr.map(([c,v])=>`<div class="cat"><span class="circ" style="background:color-mix(in srgb,var(--k-bill) 18%,transparent);color:var(--k-bill);font-weight:700">${esc(initial(c))}</span><div style="min-width:0"><span>${esc(c)}</span><div class="bar6"><i style="width:${(v/amax*100).toFixed(1)}%;background:var(--k-bill)"></i></div></div><span class="amt" style="font-size:.92rem">${amtHTML(v)}</span></div>`).join(''):emptyBox('العملاء هيظهروا هنا.');
   $('#flPending').innerHTML=pend.length?pend.sort(byDateDesc).map(flItem).join(''):emptyBox('مفيش فلوس متأخرة عند حد.');
@@ -1240,11 +1284,11 @@ function render(){
   $('#storeBadge').textContent='بياناتك محفوظة على الجهاز ده بس. اعمل نسخة احتياطية كل فترة.';
   const d=monthData(curMonth);
   fillAccSelects();
-  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();
+  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();applyPriv();
 }
 
 /* ---------- events ---------- */
-function setTab(t){document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+function setTab(t){hidePriv();document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
   Object.keys(TITLES).forEach(k=>$('#p-'+k).hidden=k!==t);$('#pageTitle').textContent=TITLES[t];
   try{localStorage.setItem(LS+'.tab',t)}catch(e){}window.scrollTo(0,0)}
 document.querySelectorAll('.nav [data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
@@ -1364,10 +1408,15 @@ $('#plExpForm').onsubmit=e=>{e.preventDefault();const amount=+$('#plExpAmt').val
   act(store.saveSettings({expected:[...(S.settings.expected||[]),item]}),'اتضافت للتوقعات');$('#plExpName').value='';$('#plExpAmt').value=''};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-expdel]');if(!b)return;act(store.saveSettings({expected:(S.settings.expected||[]).filter(x=>x.id!==b.dataset.expdel)}),'اتشالت')});
 // freelance
+$('#flToSave').addEventListener('change',e=>{$('#flSavePotWrap').hidden=!e.target.checked;fillFlSavePot()});
 $('#flCur').onchange=()=>{const c=$('#flCur').value;$('#flRate').value=(S.settings.lastRate||{})[c]||PEG[c]||'';renderFreelance()};
 $('#flForm').onsubmit=e=>{e.preventDefault();const cur=$('#flCur').value;const amount=+$('#flAmt').value;const rate=cur==='SAR'?1:+$('#flRate').value;
   if(!(amount>0))return;if(cur!=='SAR'&&!(rate>0)){toast('اكتب سعر التحويل للريال');$('#flRate').focus();return}
-  act(store.add('freelance',{client:$('#flClient').value.trim(),project:$('#flProject').value.trim(),amount,currency:cur,rate,fee:+$('#flFee').value||0,date:$('#flDate').value,status:$('#flStatus').value,ts:Date.now()}),'اتسجّل');
+  const toSave=$('#flToSave').checked,savePot=$('#flSavePot').value;
+  (async()=>{try{await store.add('freelance',{toSave,savePot,client:$('#flClient').value.trim(),field:$('#flField').value,kind:$('#flKind').value,project:$('#flProject').value.trim(),amount,currency:cur,rate,fee:+$('#flFee').value||0,date:$('#flDate').value,status:$('#flStatus').value,ts:Date.now()});
+    const f=S.freelance[S.freelance.length-1];if(toSave&&f&&f.status==='paid')await flToSavings(f,savePot);
+    toast(toSave?(f&&f.status==='paid'?'اتسجّل واتضاف على التحويش':'اتسجّل، وهيتضاف على التحويش لما تقبضه'):'اتسجّل')}catch(err){toast('ماتحفظش. جرّب تاني.')}})();
+  $('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;
   if(cur!=='SAR'&&(S.settings.lastRate||{})[cur]!==rate)act(store.saveSettings({lastRate:{...(S.settings.lastRate||{}),[cur]:rate}}));
   ['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='')};
 $('#flInIncome').onchange=e=>act(store.saveSettings({freelanceInIncome:e.target.checked}));
@@ -1378,7 +1427,8 @@ document.addEventListener('click',async e=>{
   if(e.target.closest('[data-open-sheet]')){openSheet();return}
   const g=e.target.closest('[data-goto]');if(g){setTab(g.dataset.goto);return}
   const ag=e.target.closest('[data-accgo]');if(ag&&!e.target.closest('[data-del]')){goAcc(ag.dataset.accgo);return}
-  const p=e.target.closest('[data-paid]');if(p){act(store.update('freelance',p.dataset.paid,{status:'paid',date:todayISO()}),'اتعلّم إنه اتقبض');return}
+  const p=e.target.closest('[data-paid]');if(p){const id=p.dataset.paid;(async()=>{try{await store.update('freelance',id,{status:'paid',date:todayISO()});const f=S.freelance.find(x=>x.id===id);if(f&&f.toSave){await flToSavings(f);toast('اتقبضت واتضافت على التحويش')}else toast('اتعلّم إنه اتقبض')}catch(err){toast('ماتحفظش. جرّب تاني.')}})();return}
+  const fs=e.target.closest('[data-fl2save]');if(fs){const f=S.freelance.find(x=>x.id===fs.dataset.fl2save);if(f)act(flToSavings(f,$('#flSavePot').value),'اتضافت على التحويش');return}
   const sp=e.target.closest('[data-subpaid]');
   if(sp){const s=S.subs.find(x=>x.id===sp.dataset.subpaid);if(!s)return;sp.disabled=true;
     try{await store.add('tx',{type:'expense',amount:Math.round(subSar(s)*100)/100,category:'اشتراكات',note:s.name,date:s.next>todayISO()?todayISO():s.next,accountId:s.accountId||'',source:'sub',ts:Date.now()});
@@ -1386,7 +1436,7 @@ document.addEventListener('click',async e=>{
     catch(err){toast('ماتحفظش. جرّب تاني.')}sp.disabled=false;return}
   const b=e.target.closest('[data-del]');if(!b)return;
   if(armed!==b){if(armed)armed.textContent='✕';armed=b;b.textContent='متأكد؟';setTimeout(()=>{if(armed===b){b.textContent='✕';armed=null}},3000);return}
-  const[c,id]=b.dataset.del.split(':');armed=null;act(store.remove(c,id),'اتمسح');
+  const[c,id]=b.dataset.del.split(':');armed=null;if(c==='freelance')S.savings.filter(s=>s.flId===id).forEach(s=>store.remove('savings',s.id));act(store.remove(c,id),'اتمسح');
 });
 
 function toggleAcc(id){
@@ -1394,6 +1444,7 @@ function toggleAcc(id){
   document.querySelectorAll('#homeAccts .wsw').forEach(x=>x.remove());
   document.querySelectorAll('#homeAccts .wcard').forEach(c=>{const o=c.dataset.accopen===UI.openAcc;c.classList.toggle('open',o);c.setAttribute('aria-expanded',o)});
 }
+$('#flField').innerHTML=FL_FIELDS.map(f=>`<option>${f}</option>`).join('');
 /* ---------- subscription kind, wallet cards, category chips ---------- */
 $('#sKind').innerHTML=Object.entries(SUB_KIND).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
 $('#sKind').value='other';
