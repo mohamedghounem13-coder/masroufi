@@ -188,6 +188,11 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 .wsw{position:absolute;inset:auto 12px 12px 12px;z-index:3;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:rgb(0 0 0/.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-radius:14px;padding:10px}
 .wsw button{width:28px;height:28px;border-radius:50%;border:2px solid rgb(255 255 255/.6);cursor:pointer;padding:0}
 .wsw button[aria-pressed="true"]{border-color:#fff;box-shadow:0 0 0 2px rgb(255 255 255/.5)}
+.pllegend{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--muted)}
+.pllegend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-inline-end:5px}
+.plrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--soft)}
+.plbar{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
+.plbar i{display:block;height:100%}
 .potwrap{background:var(--surface);border-radius:18px;overflow:hidden}
 .potwrap>.item{background:none}
 .potdet{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--soft);padding-top:12px}
@@ -461,10 +466,6 @@ svg text{font-family:var(--body)}
       <div class="foot"><span id="svFootA"></span><span id="svFootB"></span></div>
     </div>
 
-    <div class="two" id="svStats">
-      <div class="mini"><div class="t"><span>بتحوّش كل شهر</span><span class="circ in"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></div><div class="v" id="svMonthly"></div></div>
-      <div class="mini"><div class="t"><span>في السنة</span><span class="circ in"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span></div><div class="v" id="svYearly"></div></div>
-    </div>
 
     <div class="sect"><h2>فلوسك المتحوّشة فين</h2></div>
     <div class="list" id="svPots"></div>
@@ -476,18 +477,41 @@ svg text{font-family:var(--body)}
           <label>متحوّش فين؟<select id="svWhere"></select></label>
           <label>مصدره منين؟<select id="svSource"></select></label>
           <label>محوّش كام دلوقتي؟ (ر.س)<input id="svStart" type="number" min="0" step="any" inputmode="decimal" required placeholder="مثلاً 20000"></label>
-          <label>هتحط كام كل شهر؟ (اختياري)<input id="svMonthlyIn" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 1500"></label>
           <label>ملاحظة (اختياري)<input id="svNoteIn" placeholder="مثلاً: حساب ادخار، سبائك 50 جرام"></label>
           <button class="btn primary">احفظ</button>
         </form>
-        <span class="muted small">المبلغ بيزيد لوحده كل شهر باللي هتحطه. لو سحبت أو زودت، دوس «تعديل» على التحويش وغيّر «محوّش كام دلوقتي».</span>
+        <span class="muted small">ده المبلغ اللي معاك فعلاً. لو زوّدت أو سحبت، دوس على التحويش وسجّل «زوّدت» أو «سحبت».</span>
         <button type="button" class="btn link small" id="svCancel" hidden>إلغاء التعديل</button>
       </div>
     </details>
 
-    <div class="card" id="svProj">
-      <h2>هيبقى معاك</h2>
-      <div class="list" id="svProjList"></div>
+    <div class="card" id="svLogCard">
+      <h2>سجّل تحويش شهر</h2>
+      <form id="svLogForm" class="fields">
+        <label>الشهر<input id="svLogMonth" type="month" required></label>
+        <label>حوّشت كام؟ (ر.س)<input id="svLogAmt" type="number" min="0" step="any" inputmode="decimal" required placeholder="مثلاً 2000"></label>
+        <label>حطّيته فين؟<select id="svLogPot"></select></label>
+        <button class="btn primary">سجّل</button>
+      </form>
+      <div class="row between" style="margin-top:4px"><h3 style="font-size:.95rem">حوّشت كام كل شهر</h3><span class="muted small" id="svByMonthSum"></span></div>
+      <div class="cats" id="svByMonth"></div>
+    </div>
+
+    <div class="card" id="svPlan">
+      <div class="row between"><h2>احسب هيبقى معاك كام</h2><span class="chip warn">توقّع بس</span></div>
+      <p class="muted small" style="margin:0">ده حساب للتخطيط، مش بيتضاف على تحويشك الحالي.</p>
+      <label>لو حوّشت كل شهر (ر.س)<input id="plMonthly" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 1500"></label>
+      <div class="row between"><h3 style="font-size:.95rem">فلوس متوقعة (بونص، عيدية، مستحقات...)</h3></div>
+      <div class="list" id="plExp"></div>
+      <form id="plExpForm" class="fields">
+        <label>إيه هي؟<input id="plExpName" placeholder="مثلاً: بونص آخر السنة" required></label>
+        <label>المبلغ (ر.س)<input id="plExpAmt" type="number" min="0" step="any" inputmode="decimal" required></label>
+        <label>هتيجي إمتى؟<input id="plExpMonth" type="month" required></label>
+        <button class="btn">ضيف</button>
+      </form>
+      <div class="pllegend"><span><i style="background:var(--brand)"></i>معاك دلوقتي</span><span><i style="background:var(--good)"></i>التحويش الشهري</span><span><i style="background:var(--k-gold)"></i>فلوس متوقعة</span></div>
+      <div class="list" id="plRes"></div>
+      <div class="tip" id="plGoal" hidden></div>
     </div>
 
     <div class="card" id="svGoalCard" hidden>
@@ -1121,27 +1145,55 @@ function fillSvSelects(){
     if(v&&[...w.options].some(o=>o.value===v))w.value=v;}
   const s=$('#svSource');if(!s.options.length)s.innerHTML=Object.entries(SV_SOURCE).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
 }
+const curMonthISO=()=>todayISO().slice(0,7);
+const planMonthly=()=>UI.plMonthly!=null?UI.plMonthly:(+S.settings.planMonthly||0);
+const planExp=()=>(S.settings.expected||[]).slice().sort((a,b)=>(a.month||'').localeCompare(b.month||''));
+function planAt(n){const tm=addMonths(todayISO(),n).slice(0,7),cm=curMonthISO();
+  const exp=planExp().filter(e=>e.month>=cm&&e.month<=tm).reduce((a,e)=>a+(+e.amount||0),0);
+  return{now:potsNow(),monthly:planMonthly()*n,exp,total:potsNow()+planMonthly()*n+exp};}
+function renderPlanner(){
+  const pm=$('#plMonthly');if(document.activeElement!==pm)pm.value=planMonthly()||'';
+  if(!$('#plExpMonth').value)$('#plExpMonth').value=curMonthISO();
+  const cm=curMonthISO();
+  $('#plExp').innerHTML=planExp().length?planExp().map(e=>`<div class="item"><span class="badge sq" style="background:color-mix(in srgb,var(--k-gold) 20%,transparent);color:var(--k-gold)"><svg class="i" viewBox="0 0 24 24"><path d="M4 9h16v11H4z"/><path d="M12 9v11M4 13h16M12 9c-2-4-6-4-6-1.5S10 9 12 9c2 0 6 .9 6-1.5S14 5 12 9z"/></svg></span><div class="what"><b>${esc(e.name)}</b><span>${monthName(e.month)}${e.month<cm?' · فات':''}</span></div><div class="end"><span class="amt">${amtHTML(e.amount)}</span></div><button class="btn x" data-expdel="${e.id}" aria-label="امسح">✕</button></div>`).join(''):'';
+  const rows=[[3,'بعد ٣ شهور'],[6,'بعد ٦ شهور'],[12,'بعد سنة'],[24,'بعد سنتين']];
+  const max=Math.max(...rows.map(([n])=>planAt(n).total),1);
+  $('#plRes').innerHTML=rows.map(([n,l])=>{const r=planAt(n);const w=v=>(Math.max(0,v)/max*100).toFixed(2)+'%';
+    return`<div class="plrow"><div class="row between" style="flex-wrap:nowrap"><span><b>${l}</b> <span class="muted small">${monthName(addMonths(todayISO(),n).slice(0,7))}</span></span><span class="amt">${amtHTML(r.total)}</span></div>
+    <div class="plbar"><i style="width:${w(r.now)};background:var(--brand)"></i><i style="width:${w(r.monthly)};background:var(--good)"></i><i style="width:${w(r.exp)};background:var(--k-gold)"></i></div>
+    <div class="muted small">${fmt(r.now)} + ${fmt(r.monthly)} تحويش${r.exp?` + ${fmt(r.exp)} متوقع`:''}</div></div>`}).join('');
+  const goal=+S.settings.goalAmount||0,gb=$('#plGoal');gb.hidden=!goal;
+  if(goal){let hit=-1;for(let n=0;n<=600;n++)if(planAt(n).total>=goal){hit=n;break}
+    gb.innerHTML=hit===0?`بالخطة دي إنت واصل لهدفك ${S.settings.goalName?'«'+esc(S.settings.goalName)+'» ':''}خلاص.`:hit>0?`بالخطة دي هتوصل لهدفك ${S.settings.goalName?'«'+esc(S.settings.goalName)+'» ':''}في <b>${monthName(addMonths(todayISO(),hit).slice(0,7))}</b>، بعد ${nf0.format(hit)} شهر.`:'بالخطة دي مش هتوصل للهدف. زوّد المبلغ الشهري أو ضيف فلوس متوقعة.';}
+}
+function renderSvLog(){
+  const sel=$('#svLogPot');if(document.activeElement!==sel){const v=sel.value;
+    sel.innerHTML=S.pots.map(p=>`<option value="${p.id}">${esc(potWhere(p).label)}${p.note?' · '+esc(p.note):''}</option>`).join('')+`<option value="__new">مكان جديد</option>`;
+    if(v&&[...sel.options].some(o=>o.value===v))sel.value=v;}
+  if(!$('#svLogMonth').value)$('#svLogMonth').value=todayISO().slice(0,7);
+  const by={};S.pots.forEach(p=>potHistory(p).forEach(g=>g.items.forEach(x=>{if(x.label==='كان معاك وقت ما ضفته')return;by[g.m]=(by[g.m]||0)+x.amount})));
+  const ms=Object.keys(by).filter(m=>by[m]).sort().reverse().slice(0,12);
+  const max=Math.max(...ms.map(m=>Math.abs(by[m])),1);
+  $('#svByMonthSum').innerHTML=ms.length?`المتوسط ${money(ms.reduce((a,m)=>a+by[m],0)/ms.length)}`:'';
+  $('#svByMonth').innerHTML=ms.length?ms.map(m=>`<div class="cat" style="grid-template-columns:6.5em 1fr auto"><span class="small">${monthName(m)}</span><div class="bar6" style="height:8px;margin:0"><i style="width:${(Math.abs(by[m])/max*100).toFixed(1)}%;background:${by[m]>=0?'var(--good)':'var(--bad)'}"></i></div><span class="amt ${by[m]>=0?'in':''}" style="font-size:.9rem">${by[m]>=0?'+':'−'}${amtHTML(Math.abs(by[m]))}</span></div>`).join(''):'<div class="empty">سجّل كل شهر حوّشت فيه كام، وهيظهرلك هنا.</div>';
+}
 function renderSave(){
   fillSvSelects();
-  const g=S.settings;const now=potsNow(),mon=S.pots.reduce((a,p)=>a+(+p.monthly||0),0),goal=+g.goalAmount||0;
+  const g=S.settings;const now=potsNow(),goal=+g.goalAmount||0;renderPlanner();renderSvLog();
   $('#svNow').innerHTML=bigMoney(now);
   $('#svMeterWrap').hidden=!goal;if(goal)$('#svMeter').style.width=Math.min(100,now/goal*100)+'%';
   $('#svFootA').innerHTML=S.pots.length?`${nf0.format(S.pots.length)} ${S.pots.length===1?'مكان':'أماكن'}`:'ضيف أول تحويش من تحت';
   $('#svFootB').innerHTML=goal?`من ${money(goal)}`:'';
-  $('#svStats').hidden=!mon;$('#svMonthly').innerHTML=amtHTML(mon);$('#svYearly').innerHTML=amtHTML(mon*12);
   $('#svPots').innerHTML=S.pots.length?S.pots.slice().sort((a,b)=>potNow(b)-potNow(a)).map(p=>{const w=potWhere(p);
     const open=UI.openPot===p.id;
-    return`<div class="potwrap${open?' open':''}"><div class="item" role="button" tabindex="0" data-potopen="${p.id}" aria-expanded="${open}" style="cursor:pointer">${w.badge}<div class="what"><b>${esc(w.label)}</b><span>من ${SV_SOURCE[p.source]||'تاني'}${+p.monthly?` · +${fmt(p.monthly)} كل شهر`:''}${p.note?' · '+esc(p.note):''}</span></div>
+    return`<div class="potwrap${open?' open':''}"><div class="item" role="button" tabindex="0" data-potopen="${p.id}" aria-expanded="${open}" style="cursor:pointer">${w.badge}<div class="what"><b>${esc(w.label)}</b><span>من ${SV_SOURCE[p.source]||'تاني'}${p.note?' · '+esc(p.note):''}</span></div>
       <div class="end"><span class="amt">${amtHTML(potNow(p))}</span><span class="muted small">${open?'اقفل ⌃':'التفاصيل ⌄'}</span></div>
       <span class="row" style="gap:0;flex-wrap:nowrap"><button class="btn tiny" data-potedit="${p.id}">تعديل</button><button class="btn x" data-del="pots:${p.id}" aria-label="امسح">✕</button></span></div>${open?potDetail(p):''}</div>`}).join(''):emptyBox('لسه ما ضفتش تحويش. دوس «إضافة تحويش» واختار فلوسك متحوّشة فين ومصدرها منين.');
-  $('#svProj').hidden=!mon;
-  const rows=[[6,'بعد ٦ شهور'],[12,'بعد سنة'],[24,'بعد سنتين'],[60,'بعد ٥ سنين']];
-  $('#svProjList').innerHTML=rows.map(([n,l])=>`<div class="item"><span class="badge" style="background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)"><svg class="i" viewBox="0 0 24 24"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg></span><div class="what"><b>${l}</b><span>${monthName(addMonths(todayISO(),n).slice(0,7))}</span></div><div class="end"><span class="amt">${amtHTML(now+mon*n)}</span></div><span></span></div>`).join('');
   $('#svGoalCard').hidden=!goal;
   if(goal){const rem=goal-now;$('#svGoalName').textContent=g.goalName?`هدفك: ${g.goalName}`:'هدفك';
     $('#svGoalPct').textContent=pct(Math.min(100,now/goal*100));$('#svGoalBar').style.width=Math.min(100,now/goal*100)+'%';
     $('#svGoalA').innerHTML=rem<=0?'وصلت لهدفك 🎉':`فاضل ${money(rem)}`;
-    $('#svGoalB').innerHTML=rem<=0?'':mon>0?`هتوصل ${monthName(addMonths(todayISO(),Math.ceil(rem/mon)).slice(0,7))}`:'حط مبلغ شهري عشان نحسب';}
+    $('#svGoalB').innerHTML=rem<=0?'':'شوف «احسب هيبقى معاك كام» تحت';}
   const a=document.activeElement;
   if(a!==$('#svGoalNameIn'))$('#svGoalNameIn').value=g.goalName||'';
   if(a!==$('#svGoalAmtIn'))$('#svGoalAmtIn').value=goal||'';
@@ -1272,9 +1324,9 @@ $('#pendAdd').onclick=async()=>{
 };
 
 // savings
-function resetSvForm(){UI.editPot=null;['#svStart','#svMonthlyIn','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
+function resetSvForm(){UI.editPot=null;['#svStart','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
 $('#svForm').onsubmit=async e=>{e.preventDefault();
-  const want=+$('#svStart').value||0,base={where:$('#svWhere').value,source:$('#svSource').value,monthly:+$('#svMonthlyIn').value||0,note:$('#svNoteIn').value.trim()};
+  const want=+$('#svStart').value||0,base={where:$('#svWhere').value,source:$('#svSource').value,monthly:0,note:$('#svNoteIn').value.trim()};
   const p=UI.editPot&&S.pots.find(x=>x.id===UI.editPot);
   try{
     if(p){
@@ -1294,9 +1346,23 @@ document.addEventListener('click',e=>{if(e.target.closest('button,input,form'))r
 $('#svCancel').onclick=()=>{resetSvForm();$('#svAdd').open=false};
 $('#svGoalForm').onsubmit=e=>{e.preventDefault();act(store.saveSettings({goalName:$('#svGoalNameIn').value.trim(),goalAmount:+$('#svGoalAmtIn').value||0}),'الهدف اتحفظ')};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-potedit]');if(!b)return;const p=S.pots.find(x=>x.id===b.dataset.potedit);if(!p)return;
-  UI.editPot=p.id;fillSvSelects();$('#svWhere').value=p.where;$('#svSource').value=p.source||'other';$('#svStart').value=Math.round(potNow(p)*100)/100;$('#svMonthlyIn').value=p.monthly||'';$('#svNoteIn').value=p.note||'';
+  UI.editPot=p.id;fillSvSelects();$('#svWhere').value=p.where;$('#svSource').value=p.source||'other';$('#svStart').value=Math.round(potNow(p)*100)/100;$('#svNoteIn').value=p.note||'';
   $('#svFormTitle').textContent='تعديل التحويش';$('#svCancel').hidden=false;const d=$('#svAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'})});
 
+$('#svLogForm').onsubmit=async e=>{e.preventDefault();const amount=+$('#svLogAmt').value;if(!(amount>0))return;
+  const m=$('#svLogMonth').value||todayISO().slice(0,7);const date=m===todayISO().slice(0,7)?todayISO():m+'-01';
+  try{let pid=$('#svLogPot').value;
+    if(pid==='__new'||!pid){const ref=await store.add('pots',{where:'other',source:'other',start:0,startDate:todayISO(),monthly:0,note:'',ts:Date.now()});pid=ref&&ref.id||S.pots[S.pots.length-1].id}
+    await store.add('savings',{potId:pid,amount,kind:'in',date,note:'تحويش '+monthName(m),ts:Date.now()});
+    toast(`اتسجّل: ${monthName(m)} +${fmt(amount)} ر.س`);$('#svLogAmt').value='';
+  }catch(err){toast('ماتحفظش. جرّب تاني.')}};
+// savings planner (estimates only, never touches real savings)
+$('#plMonthly').addEventListener('input',e=>{UI.plMonthly=+e.target.value||0;renderPlanner()});
+$('#plMonthly').addEventListener('change',e=>{const v=+e.target.value||0;act(store.saveSettings({planMonthly:v})).then(()=>{UI.plMonthly=null})});
+$('#plExpForm').onsubmit=e=>{e.preventDefault();const amount=+$('#plExpAmt').value;if(!(amount>0))return;
+  const item={id:rid(),name:$('#plExpName').value.trim(),amount,month:$('#plExpMonth').value||curMonthISO()};
+  act(store.saveSettings({expected:[...(S.settings.expected||[]),item]}),'اتضافت للتوقعات');$('#plExpName').value='';$('#plExpAmt').value=''};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-expdel]');if(!b)return;act(store.saveSettings({expected:(S.settings.expected||[]).filter(x=>x.id!==b.dataset.expdel)}),'اتشالت')});
 // freelance
 $('#flCur').onchange=()=>{const c=$('#flCur').value;$('#flRate').value=(S.settings.lastRate||{})[c]||PEG[c]||'';renderFreelance()};
 $('#flForm').onsubmit=e=>{e.preventDefault();const cur=$('#flCur').value;const amount=+$('#flAmt').value;const rate=cur==='SAR'?1:+$('#flRate').value;
@@ -1383,6 +1449,7 @@ $('#bkImport').onchange=async e=>{
 
 /* ---------- boot ---------- */
 localStore.load();
+(function migrateMonthly(){const ps=S.pots.filter(p=>+p.monthly>0);if(!ps.length)return;let sum=0;ps.forEach(p=>{for(let k=1;k<=monthsSince(p.startDate);k++)S.savings.push({id:rid(),potId:p.id,amount:+p.monthly,kind:"in",date:addMonths(p.startDate,k),note:"التحويش الشهري",ts:Date.now()});sum+=+p.monthly;p.monthly=0;p.startDate=todayISO()});if(!S.settings.planMonthly)S.settings.planMonthly=sum;localStore.persist()})();
 (function migrateSavings(){const old=S.savings.filter(s=>!s.potId);if(!old.length)return;const id=rid();const first=old.map(s=>s.date).sort()[0]||todayISO();S.pots.push({id,where:"other",source:"other",start:0,startDate:todayISO(),firstDate:first,monthly:0,note:"تحويشك القديم",ts:Date.now()});old.forEach(s=>s.potId=id);localStore.persist()})();
 try{const t=localStorage.getItem(LS+'.tab');if(t&&TITLES[t])setTab(t)}catch(e){}
 renderSwatches();renderCatGrid();render();
