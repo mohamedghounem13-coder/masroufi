@@ -703,7 +703,7 @@ function detectKind(n){n=String(n||'');
   if(/news|kindle|audible|medium|أخبار|كتب/i.test(n))return'news';
   return'other';
 }
-const LOGOS=[[/netflix|نتفلكس/i,'netflix.com'],[/shahid|شاهد/i,'shahid.mbc.net'],[/osn/i,'osnplus.com'],[/youtube|يوتيوب/i,'youtube.com'],[/disney/i,'disneyplus.com'],[/starz/i,'starzplay.com'],[/\btod\b/i,'tod.tv'],[/crunchyroll/i,'crunchyroll.com'],
+const LOGOS=[[/prime ?video|برايم/i,'primevideo.com'],[/netflix|نتفلكس/i,'netflix.com'],[/shahid|شاهد/i,'shahid.mbc.net'],[/osn/i,'osnplus.com'],[/youtube|يوتيوب/i,'youtube.com'],[/disney/i,'disneyplus.com'],[/starz/i,'starzplay.com'],[/\btod\b/i,'tod.tv'],[/crunchyroll/i,'crunchyroll.com'],
   [/spotify|سبوتيفاي/i,'spotify.com'],[/anghami|أنغامي|انغامي/i,'anghami.com'],[/apple music/i,'music.apple.com'],[/apple tv/i,'tv.apple.com'],[/icloud/i,'icloud.com'],[/apple/i,'apple.com'],
   [/chatgpt|openai/i,'openai.com'],[/claude|anthropic/i,'claude.ai'],[/gemini/i,'gemini.google.com'],[/perplexity/i,'perplexity.ai'],[/midjourney/i,'midjourney.com'],[/copilot/i,'copilot.microsoft.com'],
   [/google one/i,'one.google.com'],[/dropbox/i,'dropbox.com'],[/onedrive/i,'onedrive.live.com'],
