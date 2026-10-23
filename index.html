@@ -19,11 +19,14 @@ input:not(#txAmt),select,textarea{font-size:16px!important}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}
 img{max-width:100%}
 [hidden]{display:none!important}
+:root.f-lalezar{--display:"Lalezar","Alexandria","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root.f-lalezar h1,:root.f-lalezar h2,:root.f-lalezar .page,:root.f-lalezar .hero .big{font-weight:400;letter-spacing:0}
+:root.f-lalezar .hero .big{font-size:clamp(2.5rem,11vw,3.3rem)}
 .backup{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=Lalezar&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: phone-width app column, deep-green hero cards with lime meters, white rounded cards, icon circles tinted by category, fixed bottom nav */
 :root{
@@ -70,7 +73,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 
 /* bottom nav */
 .nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
-.nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:2px;padding-block:8px}
+.nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding-block:8px}
+.nav button span{font-size:.66rem}
 .nav button{appearance:none;border:0;background:none;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:14px;cursor:pointer;font-size:.72rem;min-width:0}
 .nav button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .nav button[aria-selected="true"]{background:color-mix(in srgb,var(--lime) 38%,transparent);color:var(--brand-ink);font-weight:600}
@@ -578,6 +582,47 @@ svg text{font-family:var(--body)}
     <button type="button" class="btn link small" id="svReorder" style="order:999;align-self:center">رتّب الصفحة</button>
   </section>
 
+  <!-- DEBTS -->
+  <section class="panel" id="p-debts" hidden>
+    <div class="hero">
+      <div class="lbl"><span>عليك ديون</span><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span></div>
+      <div class="big" id="dbOwe" data-priv="dbOwe" role="button" tabindex="0"></div>
+      <div class="meter" id="dbMeterWrap"><i id="dbMeter" style="width:0"></i></div>
+      <div class="foot"><span id="dbFootA"></span><span id="dbFootB"></span></div>
+    </div>
+    <div class="two">
+      <div class="mini"><div class="t"><span>بتسدّد كل شهر</span><span class="circ out"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></div><div class="v" id="dbMonthly"></div></div>
+      <div class="mini"><div class="t"><span>ليك عند الناس</span><span class="circ in"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></span></div><div class="v" id="dbOwedTot"></div></div>
+    </div>
+
+    <div class="sect"><h2>ديونك</h2></div>
+    <div class="list" id="dbList"></div>
+
+    <div id="dbOwedWrap">
+      <div class="sect"><h2>ليك عند الناس</h2></div>
+      <div class="list" id="dbOwedList" style="margin-top:10px"></div>
+    </div>
+
+    <details class="add" id="dbAdd">
+      <summary id="dbFormTitle">دين جديد</summary>
+      <div class="inner">
+        <form id="dbForm" class="fields">
+          <label>الدين ده<select id="dbDir"><option value="owe">أنا مديون</option><option value="owed">حد مديون لي</option></select></label>
+          <label>النوع<select id="dbType"><option value="credit">بطاقة ائتمانية (كريديت)</option><option value="person">شخص</option><option value="loan">قرض بنك</option><option value="installment">تقسيط (تابي، تمارا...)</option><option value="other">تاني</option></select></label>
+          <label id="dbAccWrap">أنهي كارت؟<select id="dbAcc"></select></label>
+          <label>لمين؟<input id="dbName" placeholder="مثلاً: أحمد، بنك الرياض"></label>
+          <label>المبلغ الكلي (ر.س)<input id="dbAmt" type="number" min="0" step="any" inputmode="decimal" required></label>
+          <label>اتدفع منه كام لحد دلوقتي؟<input id="dbPre" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></label>
+          <label>القسط الشهري (اختياري)<input id="dbMon" type="number" min="0" step="any" inputmode="decimal"></label>
+          <label>ميعاد السداد الجاي (اختياري)<input id="dbDue" type="date"></label>
+          <label>ملاحظة (اختياري)<input id="dbNote" placeholder="مثلاً: سلفة السفر"></label>
+          <button class="btn primary" id="dbSubmit">ضيف</button>
+        </form>
+        <button type="button" class="btn link small" id="dbCancel" hidden>إلغاء التعديل</button>
+      </div>
+    </details>
+  </section>
+
   <!-- FREELANCE -->
   <section class="panel" id="p-freelance" hidden>
     <div class="hero">
@@ -620,6 +665,7 @@ svg text{font-family:var(--body)}
   </section>
   <p class="store" id="storeBadge"></p>
   <div class="backup">
+    <button class="btn tiny" id="fontToggle" type="button">خط العناوين</button>
     <button class="btn tiny" id="bkExport" type="button">نسخة احتياطية</button>
     <label class="btn tiny" style="flex-direction:row;font-size:.8rem;color:var(--fg)">استرجاع نسخة<input type="file" id="bkImport" accept="application/json,.json" hidden></label>
   </div>
@@ -648,6 +694,7 @@ svg text{font-family:var(--body)}
   <button role="tab" data-tab="stats" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><path d="M6 20v-7M12 20V5M18 20v-10"/></svg><span>الإحصائيات</span></button>
   <button role="tab" data-tab="subs" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg><span>الاشتراكات</span></button>
   <button role="tab" data-tab="save" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg><span>التحويش</span></button>
+  <button role="tab" data-tab="debts" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>الديون</span></button>
   <button role="tab" data-tab="freelance" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg><span>الفريلانس</span></button>
 </div></nav>
 
@@ -750,13 +797,13 @@ document.addEventListener('error',e=>{const t=e.target;if(t&&t.classList&&t.clas
 document.addEventListener('load',e=>{const t=e.target;if(t&&t.classList&&t.classList.contains('sl')&&t.naturalWidth&&t.naturalWidth<=16)noLogo(t)},true);
 const PEG={USD:3.75,AED:1.0211};
 const DEFAULTS={defaultTarget:0,goalName:'',goalAmount:0,freelanceInIncome:true,lastRate:{},budget:0};
-const COLS=['tx','savings','freelance','subs','accounts','pots'];
+const COLS=['tx','savings','freelance','subs','accounts','pots','debts','debtpays'];
 const LS='masroufi.v1';
-const S={tx:[],savings:[],freelance:[],subs:[],accounts:[],pots:[],plans:{},settings:{...DEFAULTS},pending:[]};
+const S={tx:[],savings:[],freelance:[],subs:[],accounts:[],pots:[],debts:[],debtpays:[],plans:{},settings:{...DEFAULTS},pending:[]};
 const UI={txType:'expense',txCat:'أكل وشرب',saveKind:'in',filter:'',accFilter:'',subColor:'k-sub',accColor:'bank',openAcc:null,kindTouched:false};
 const ACC_TYPE={credit:'كريديت',debit:'ديبيت / مدى',wallet:'محفظة',cash:'كاش'};
 const BANK_KEYS=[['الأهلي',/الأهلي|الاهلي|\bSNB\b|\bNCB\b|alahli/i],['الراجحي',/الراجحي|rajhi/i],['الرياض',/الرياض|riyad/i],['الإنماء',/الإنماء|الانماء|alinma/i],['البلاد',/البلاد|albilad/i],['ساب',/ساب|\bSAB\b|\bSABB\b/i],['العربي',/العربي الوطني|\bANB\b/i],['الجزيرة',/الجزيرة|aljazira|\bBAJ\b/i],['الفرنسي',/الفرنسي|\bBSF\b|fransi/i],['الاستثمار',/الاستثمار|\bSAIB\b/i],['STC',/stc ?(bank|pay)/i],['D360',/d360/i],['urpay',/urpay|يور ?باي/i]];
-const TITLES={home:'نظرة عامة',tx:'العمليات',stats:'الإحصائيات',subs:'الاشتراكات',save:'التحويش',freelance:'الفريلانس'};
+const TITLES={home:'نظرة عامة',debts:'الديون',tx:'العمليات',stats:'الإحصائيات',subs:'الاشتراكات',save:'التحويش',freelance:'الفريلانس'};
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1276,6 +1323,53 @@ async function ensurePot(pid){
 async function flToSavings(f,pid){if(flSaved(f))return;const potId=await ensurePot(pid||f.savePot);
   await store.add('savings',{potId,amount:Math.round(flSar(f)*100)/100,kind:'in',date:f.date||todayISO(),note:'فريلانس: '+(f.client||''),flId:f.id,ts:Date.now()});
   if(f.savePot!==potId)await store.update('freelance',f.id,{toSave:true,savePot:potId});}
+/* ---------- debts ---------- */
+const DB_TYPE={credit:'كريديت كارد',person:'شخص',loan:'قرض',installment:'تقسيط',other:'تاني'};
+const DB_ICON={loan:'<path d="M3 10 12 4l9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',installment:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',other:'<circle cx="12" cy="12" r="8"/><path d="M12 8v5M12 16h.01"/>',credit:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'};
+const dbPays=d=>S.debtpays.filter(p=>p.debtId===d.id);
+const dbPaid=d=>(+d.pre||0)+dbPays(d).reduce((a,p)=>a+(+p.amount||0),0);
+const dbLeft=d=>Math.max(0,(+d.amount||0)-dbPaid(d));
+function dbName(d){const a=d.type==='credit'?accById(d.accountId):null;return d.name||(a?accShort(a):DB_TYPE[d.type]||'دين')}
+function dbBadge(d){
+  const a=d.type==='credit'?accById(d.accountId):null;const dom=a?bankDomain(a.bank):(d.type==='loan'?bankDomain(d.name):'');
+  if(dom)return`<span class="badge sq logo" style="--bc:var(--k-wine)"><img class="sl" src="https://www.google.com/s2/favicons?domain=${dom}&sz=128" alt=""><span class="fb"><svg class="i" viewBox="0 0 24 24">${DB_ICON[d.type]||DB_ICON.other}</svg></span></span>`;
+  if(d.type==='person')return`<span class="badge" style="background:color-mix(in srgb,${d.dir==='owed'?'var(--good)':'var(--k-move)'} 18%,transparent);color:${d.dir==='owed'?'var(--good)':'var(--k-move)'}">${esc(initial(d.name))}</span>`;
+  return`<span class="badge sq" style="background:color-mix(in srgb,var(--k-wine) 16%,transparent);color:var(--brand-ink)"><svg class="i" viewBox="0 0 24 24">${DB_ICON[d.type]||DB_ICON.other}</svg></span>`;
+}
+function dbItem(d){
+  const left=dbLeft(d),tot=+d.amount||0,p=tot?Math.min(100,dbPaid(d)/tot*100):0,open=UI.openDebt===d.id,done=left<=0;
+  const due=d.due&&!done?dueChip(daysUntil(d.due)):'';const mon=+d.monthly||0;
+  const finish=!done&&mon?`هتخلص ${monthName(addMonths(todayISO(),Math.ceil(left/mon)).slice(0,7))}`:'';
+  const pays=dbPays(d).slice().sort(byDateDesc);
+  return`<div class="potwrap"><div class="item fl" data-debtopen="${d.id}" style="cursor:pointer">${dbBadge(d)}
+    <div class="what"><b>${esc(dbName(d))}</b><span>${DB_TYPE[d.type]||''}${mon?` · قسط ${fmt(mon)}`:''}${d.note?' · '+esc(d.note):''}</span></div>
+    <div class="end"><span class="amt ${d.dir==='owed'?'in':''}">${amtHTML(left)}</span><span class="muted small">${done?'<span class="chip good">خلص</span>':'من '+fmt(tot)}</span></div>
+    <div class="acts" style="justify-content:space-between"><span class="row" style="gap:6px">${due}${finish?`<span class="muted small">${finish}</span>`:''}</span><span class="muted small">${open?'اقفل ⌃':'التفاصيل ⌄'}</span></div>
+    <div style="grid-column:1/-1" class="bar6"><i style="width:${p.toFixed(1)}%;background:${d.dir==='owed'?'var(--good)':'var(--brand)'}"></i></div></div>
+    ${open?`<div class="potdet">
+      ${+d.pre?`<div class="row between small muted"><span>كان متدفع قبل ما تسجّله</span><span>${fmt(d.pre)}</span></div>`:''}
+      ${pays.map(x=>`<div class="row between small muted" style="flex-wrap:nowrap"><span>${d.dir==='owed'?'استلمت':'سدّدت'} · ${dayLabel(x.date)}${x.note?' · '+esc(x.note):''}</span><span style="white-space:nowrap">${fmt(x.amount)} <button class="btn x" data-del="debtpays:${x.id}" aria-label="امسح">✕</button></span></div>`).join('')||(+d.pre?'':'<div class="muted small">لسه ما فيش سداد.</div>')}
+      ${done?'':`<form class="row" data-debtpay="${d.id}" style="flex-wrap:nowrap;gap:6px"><input type="number" min="0" step="any" inputmode="decimal" placeholder="${mon?fmt(mon):'المبلغ'}" aria-label="المبلغ"><input type="date" value="${todayISO()}" aria-label="التاريخ" style="max-width:9.5em"><button class="btn tiny primary">${d.dir==='owed'?'استلمت':'سدّدت'}</button></form>`}
+      <div class="row" style="justify-content:flex-end;gap:6px"><button class="btn tiny" data-debtedit="${d.id}">تعديل</button><button class="btn tiny danger" data-del="debts:${d.id}">امسح الدين</button></div>
+    </div>`:''}</div>`;
+}
+function renderDebts(){
+  const sel=$('#dbAcc');if(document.activeElement!==sel){const v=sel.value;const cards=S.accounts.filter(a=>a.type==='credit');sel.innerHTML=(cards.length?cards:S.accounts).map(a=>`<option value="${a.id}">${esc(accShort(a))}</option>`).join('')+'<option value="">كارت مش متسجّل</option>';if(v!=null&&[...sel.options].some(o=>o.value===v))sel.value=v}
+  $('#dbAccWrap').hidden=$('#dbType').value!=='credit';
+  const owe=S.debts.filter(d=>d.dir!=='owed'),owed=S.debts.filter(d=>d.dir==='owed');
+  const oweLeft=owe.reduce((a,d)=>a+dbLeft(d),0),oweTot=owe.reduce((a,d)=>a+(+d.amount||0),0),owedLeft=owed.reduce((a,d)=>a+dbLeft(d),0);
+  $('#dbOwe').innerHTML=bigMoney(oweLeft);
+  $('#dbMeterWrap').hidden=!oweTot;$('#dbMeter').style.width=(oweTot?Math.min(100,(oweTot-oweLeft)/oweTot*100):0)+'%';
+  $('#dbFootA').innerHTML=oweTot?`سدّدت ${pct((oweTot-oweLeft)/oweTot*100)}`:'مفيش عليك ديون';
+  $('#dbFootB').innerHTML=oweTot?`من ${money(oweTot)}`:'';
+  $('#dbMonthly').innerHTML=amtHTML(owe.filter(d=>dbLeft(d)>0).reduce((a,d)=>a+(+d.monthly||0),0));
+  $('#dbOwedTot').innerHTML=amtHTML(owedLeft);
+  const ord=(a,b)=>(dbLeft(a)<=0)-(dbLeft(b)<=0)||(a.due||'9').localeCompare(b.due||'9');
+  $('#dbList').innerHTML=owe.length?owe.slice().sort(ord).map(dbItem).join(''):emptyBox('مفيش ديون عليك. لو عليك كريديت أو فلوس لحد، ضيفها من «دين جديد».');
+  $('#dbOwedWrap').hidden=!owed.length;
+  $('#dbOwedList').innerHTML=owed.slice().sort(ord).map(dbItem).join('');
+}
+function resetDbForm(){UI.editDebt=null;$('#dbFormTitle').textContent='دين جديد';$('#dbSubmit').textContent='ضيف';$('#dbCancel').hidden=true;['#dbName','#dbAmt','#dbPre','#dbMon','#dbDue','#dbNote'].forEach(s=>$(s).value='')}
 function flItem(f){
   const cur=f.currency==='SAR'?'':` · ${fmt(f.amount)} ${esc(f.currency)}`;
   return`<div class="item fl" data-fltap="${f.id}"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
@@ -1323,7 +1417,7 @@ function render(){
   $('#storeBadge').textContent='بياناتك محفوظة على الجهاز ده بس. اعمل نسخة احتياطية كل فترة.';
   const d=monthData(curMonth);
   fillAccSelects();
-  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();applyPriv();applySecOrder();
+  renderHome(d);renderTx(d);renderStats(d);renderSubs();renderPending();renderSave();renderFreelance();renderDebts();applyPriv();applySecOrder();
 }
 
 /* ---------- events ---------- */
@@ -1475,6 +1569,26 @@ $('#plExpForm').onsubmit=e=>{e.preventDefault();const amount=+$('#plExpAmt').val
   const item={id:rid(),name:$('#plExpName').value.trim(),amount,month:$('#plExpMonth').value||curMonthISO()};
   act(store.saveSettings({expected:[...(S.settings.expected||[]),item]}),'اتضافت للتوقعات');$('#plExpName').value='';$('#plExpAmt').value=''};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-expdel]');if(!b)return;act(store.saveSettings({expected:(S.settings.expected||[]).filter(x=>x.id!==b.dataset.expdel)}),'اتشالت')});
+// debts
+$('#dbType').addEventListener('change',()=>{$('#dbAccWrap').hidden=$('#dbType').value!=='credit'});
+$('#dbForm').onsubmit=e=>{e.preventDefault();const amount=+$('#dbAmt').value;if(!(amount>0))return;
+  const type=$('#dbType').value;
+  const data={dir:$('#dbDir').value,type,accountId:type==='credit'?($('#dbAcc').value||''):'',name:$('#dbName').value.trim(),amount,pre:+$('#dbPre').value||0,monthly:+$('#dbMon').value||0,due:$('#dbDue').value||'',note:$('#dbNote').value.trim()};
+  if(!data.name&&type!=='credit'){toast('اكتب الدين ده لمين');$('#dbName').focus();return}
+  if(UI.editDebt){act(store.update('debts',UI.editDebt,data),'الدين اتعدّل')}else act(store.add('debts',{...data,ts:Date.now()}),'الدين اتسجّل');
+  resetDbForm();$('#dbAdd').open=false};
+$('#dbCancel').onclick=()=>{resetDbForm();$('#dbAdd').open=false};
+document.addEventListener('click',e=>{
+  const ed=e.target.closest('[data-debtedit]');if(ed){const d=S.debts.find(x=>x.id===ed.dataset.debtedit);if(!d)return;UI.editDebt=d.id;
+    $('#dbDir').value=d.dir||'owe';$('#dbType').value=d.type||'other';renderDebts();$('#dbAcc').value=d.accountId||'';$('#dbName').value=d.name||'';$('#dbAmt').value=d.amount||'';$('#dbPre').value=d.pre||'';$('#dbMon').value=d.monthly||'';$('#dbDue').value=d.due||'';$('#dbNote').value=d.note||'';
+    $('#dbFormTitle').textContent='تعديل الدين';$('#dbSubmit').textContent='احفظ التعديل';$('#dbCancel').hidden=false;const a=$('#dbAdd');a.open=true;a.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(e.target.closest('button,input,form,select'))return;
+  const o=e.target.closest('[data-debtopen]');if(o){UI.openDebt=UI.openDebt===o.dataset.debtopen?null:o.dataset.debtopen;renderDebts();applyPriv()}});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-debtpay]');if(!f)return;e.preventDefault();const d=S.debts.find(x=>x.id===f.dataset.debtpay);if(!d)return;
+  const[a,dt]=f.querySelectorAll('input');const amount=+a.value||(+d.monthly||0);if(!(amount>0)){a.focus();return}
+  const pay=Math.min(amount,dbLeft(d));const next=d.due&&d.monthly?addMonths(d.due,1):d.due;
+  (async()=>{try{await store.add('debtpays',{debtId:d.id,amount:pay,date:dt.value||todayISO(),ts:Date.now()});if(next!==d.due)await store.update('debts',d.id,{due:next});
+    toast(dbLeft(d)<=0?'مبروك، الدين خلص 🎉':(d.dir==='owed'?'اتسجّل اللي استلمته':'اتسجّل السداد'))}catch(err){toast('ماتحفظش. جرّب تاني.')}})()});
 // freelance
 function resetFlForm(){UI.editFl=null;$('#flSubmit').textContent='ضيف';$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
 $('#flCancel').onclick=()=>{resetFlForm();$('#flAdd').open=false};
@@ -1518,7 +1632,7 @@ document.addEventListener('click',async e=>{
     catch(err){toast('ماتحفظش. جرّب تاني.')}sp.disabled=false;return}
   const b=e.target.closest('[data-del]');if(!b)return;
   if(armed!==b){if(armed)armed.textContent='✕';armed=b;b.textContent='متأكد؟';setTimeout(()=>{if(armed===b){b.textContent='✕';armed=null}},3000);return}
-  const[c,id]=b.dataset.del.split(':');armed=null;if(c==='freelance')S.savings.filter(s=>s.flId===id).forEach(s=>store.remove('savings',s.id));act(store.remove(c,id),'اتمسح');
+  const[c,id]=b.dataset.del.split(':');armed=null;if(c==='debts')S.debtpays.filter(x=>x.debtId===id).forEach(x=>store.remove('debtpays',x.id));if(c==='freelance')S.savings.filter(s=>s.flId===id).forEach(s=>store.remove('savings',s.id));act(store.remove(c,id),'اتمسح');
 });
 
 function toggleAcc(id){
@@ -1612,6 +1726,11 @@ $('#bkImport').onchange=async e=>{
   // buttons inside a heading shouldn't open/close it
   document.addEventListener('click',e=>{const b=e.target.closest('summary button,summary select,summary input');if(b&&b.closest('summary'))e.preventDefault()},true);
 })();
+
+/* ---------- heading font ---------- */
+(function(){const set=v=>{document.documentElement.classList.toggle('f-lalezar',v==='lalezar');try{localStorage.setItem(LS+'.font',v)}catch(e){}};
+  let v='alexandria';try{v=localStorage.getItem(LS+'.font')||'alexandria'}catch(e){}set(v);
+  $('#fontToggle').onclick=()=>{v=v==='lalezar'?'alexandria':'lalezar';set(v);toast(v==='lalezar'?'خط العناوين: لاله‌زار (الجديد)':'خط العناوين: الأصلي')};})();
 
 /* ---------- boot ---------- */
 localStore.load();
