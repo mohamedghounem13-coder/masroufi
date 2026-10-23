@@ -159,6 +159,8 @@ details.add .inner{padding:0 18px 18px;display:flex;flex-direction:column;gap:14
 .progress{height:12px;background:color-mix(in srgb,var(--lime) 35%,var(--soft));border-radius:6px;overflow:hidden}
 .progress>i{display:block;height:100%;border-radius:6px;background:var(--brand);transition:width .5s}
 
+.statacc{flex-direction:row;align-items:center;gap:10px;font-size:.88rem;color:var(--fg)}
+.statacc select{flex:1}
 .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .chips::-webkit-scrollbar{display:none}
 .chips button{appearance:none;border:0;background:var(--surface);color:var(--muted);padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;font-size:.86rem;font-weight:500}
@@ -344,18 +346,20 @@ svg text{font-family:var(--body)}
     <div class="sect"><h2>حساباتي وكروتي</h2><button class="btn link small" id="accToggle">+ حساب</button></div>
     <div class="wallet" id="homeAccts"></div>
     <details class="add" id="accAdd">
-      <summary>حساب أو كارت جديد</summary>
+      <summary id="accFormTitle">حساب أو كارت جديد</summary>
       <div class="inner">
         <form id="accForm" class="fields">
           <label>البنك<input id="aBank" required list="bankNames" placeholder="الأهلي، الراجحي، الرياض..."></label>
           <label>النوع<select id="aType"><option value="credit">بطاقة ائتمانية (كريديت)</option><option value="debit">حساب جاري / مدى (ديبيت)</option><option value="wallet">محفظة (STC Pay، urpay...)</option><option value="cash">كاش</option></select></label>
           <label>آخر 4 أرقام<input id="aLast4" inputmode="numeric" maxlength="4" placeholder="4821"></label>
           <label id="aLimitWrap">حد الكارت (اختياري)<input id="aLimit" type="number" min="0" step="100" inputmode="decimal"></label>
+          <label id="aBalWrap" hidden>الرصيد اللي فيه دلوقتي (اختياري)<input id="aBal" type="number" step="any" inputmode="decimal"></label>
           <label>صورة الكارت (اختياري)<input id="aImg" type="file" accept="image/*"></label>
           <input id="accImgEdit" type="file" accept="image/*" hidden>
-          <button class="btn primary">ضيف</button>
+          <button class="btn primary" id="accSubmit">ضيف</button>
         </form>
         <div class="row"><span class="muted small">اللون:</span><div class="swatches" id="aColor"></div></div>
+        <button type="button" class="btn link small" id="accCancel" hidden>إلغاء التعديل</button>
         <span class="muted small">آخر 4 أرقام بتخلّي رسايل البنك تتربط بالكارت الصح لوحدها. ماتكتبش رقم الكارت كامل.</span>
         <datalist id="bankNames"><option>البنك الأهلي السعودي</option><option>مصرف الراجحي</option><option>بنك الرياض</option><option>مصرف الإنماء</option><option>بنك البلاد</option><option>ساب SAB</option><option>البنك العربي الوطني</option><option>بنك الجزيرة</option><option>البنك السعودي الفرنسي</option><option>البنك السعودي للاستثمار</option><option>STC Bank</option><option>D360</option><option>urpay</option><option>كاش</option></datalist>
       </div>
@@ -416,12 +420,13 @@ svg text{font-family:var(--body)}
       <button type="button" data-r="year" aria-pressed="false">السنة دي</button>
       <button type="button" data-r="custom" aria-pressed="false">مدة تختارها</button>
     </div>
+    <label class="statacc">الكارت<select id="rAcc"></select></label>
     <div class="fields" id="rangeCustom" hidden>
       <label>من<input id="rFrom" type="date"></label>
       <label>إلى<input id="rTo" type="date"></label>
     </div>
     <div class="hero">
-      <div class="lbl"><span>صرفت في المدة دي</span><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span></div>
+      <div class="lbl"><span id="rHeroLbl">صرفت في المدة دي</span><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span></div>
       <div class="big" id="rBig"></div>
       <div class="sub" id="rSub"></div>
     </div>
@@ -1048,9 +1053,9 @@ function renderHome(d){
       ${UI.colorFor===a.id&&UI.openAcc===a.id?`<div class="wsw">${['bank',...SWATCH].map(c=>`<button type="button" data-setcolor="${a.id}:${c}" aria-label="${c==='bank'?'ألوان البنك':'لون'}" aria-pressed="${(a.color||'bank')===c}" style="background:${c==='bank'?'conic-gradient(#4F008C,#07684B,#17418A,#4F008C)':'var(--'+c+')'}"></button>`).join('')}</div>`:''}
       <div class="wtop"><span class="bk">${dom?`<span class="blogo"><img class="sl" src="https://www.google.com/s2/favicons?domain=${dom}&sz=64" alt=""></span>`:''}${esc(a.bank)}</span><span class="net">${net}</span></div>
       <div class="wmid">${a.type==='cash'?'<span></span>':'<span class="wchip"></span>'}
-        <span class="wact"><button type="button" data-accgo="${a.id}">العمليات</button><button type="button" data-acccolor="${a.id}">اللون</button><button type="button" data-accimg="${a.id}">${a.img?'غيّر الصورة':'صورة الكارت'}</button>${a.img?`<button type="button" data-accnoimg="${a.id}">شيل الصورة</button>`:''}<button type="button" data-del="accounts:${a.id}">امسح</button></span>
+        <span class="wact"><button type="button" data-accgo="${a.id}">العمليات</button><button type="button" data-accedit="${a.id}">تعديل</button><button type="button" data-acccolor="${a.id}">اللون</button><button type="button" data-accimg="${a.id}">${a.img?'غيّر الصورة':'صورة الكارت'}</button>${a.img?`<button type="button" data-accnoimg="${a.id}">شيل الصورة</button>`:''}<button type="button" data-del="accounts:${a.id}">امسح</button></span>
         ${a.type==='credit'||a.type==='debit'?'<svg class="wnfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>':'<span></span>'}</div>
-      <div><div class="wbot"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp"><small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b> <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>
+      <div><div class="wbot"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.type!=='credit'&&a.balance!=null?`<small>الرصيد · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>
       ${a.type==='credit'&&lim?`<div class="wlim"><i style="width:${Math.min(100,spent/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>من حد ${fmt(lim)}</span><span>${pct(spent/lim*100)}</span></div>`:''}</div>
     </div>`}).join(''):`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
   const up=S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).sort((a,b)=>a.next.localeCompare(b.next)).slice(0,3);
@@ -1085,13 +1090,17 @@ function rangeBounds(){
 }
 function rangeData(){
   const{from,to}=rangeBounds();const inR=x=>x.date&&x.date>=from&&x.date<=to;
-  const tx=S.tx.filter(inR);const exp=tx.filter(t=>t.type==='expense');
+  const accF=UI.statAcc||'';const byAcc=t=>!accF||(accF==='none'?!accById(t.accountId):t.accountId===accF);
+  const tx=S.tx.filter(t=>inR(t)&&byAcc(t));const exp=tx.filter(t=>t.type==='expense');
   const flNet=S.freelance.filter(f=>f.status==='paid'&&inR(f)).reduce((a,f)=>a+flSar(f),0);
   const income=sum(tx.filter(t=>t.type==='income'))+(S.settings.freelanceInIncome?flNet:0);
   const days=Math.round((new Date(to+'T12:00:00')-new Date(from+'T12:00:00'))/86400000)+1;
   return{from,to,tx,exp,expense:sum(exp),income,days};
 }
 function renderRange(r){
+  const ra=$('#rAcc');if(UI.statAcc&&UI.statAcc!=='none'&&!accById(UI.statAcc))UI.statAcc='';ra.closest('label').hidden=!S.accounts.length;
+  if(document.activeElement!==ra){ra.innerHTML='<option value="">كل الكروت والحسابات</option>'+S.accounts.map(a=>`<option value="${a.id}">${esc(accShort(a))}</option>`).join('')+'<option value="none">بدون حساب</option>';ra.value=UI.statAcc||''}
+  const sa=accById(UI.statAcc);$('#rHeroLbl').textContent=sa?'صرفت من '+sa.bank+' '+(ACC_TYPE[sa.type]||'')+' في المدة دي':UI.statAcc==='none'?'صرفت من غير كارت في المدة دي':'صرفت في المدة دي';
   document.querySelectorAll('#rangeChips button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===UI.range));
   $('#rangeCustom').hidden=UI.range!=='custom';
   $('#rBig').innerHTML=bigMoney(r.expense);
@@ -1458,12 +1467,22 @@ $('#txAcc').onchange=e=>setDefAcc(e.target.value);
 
 // accounts
 $('#accToggle').onclick=()=>{const d=$('#accAdd');d.open=!d.open;if(d.open)$('#aBank').focus()};
-$('#aType').onchange=()=>{$('#aLimitWrap').hidden=$('#aType').value!=='credit'};
+const accTypeUI=()=>{const c=$('#aType').value==='credit';$('#aLimitWrap').hidden=!c;$('#aBalWrap').hidden=c};$('#aType').onchange=accTypeUI;accTypeUI();
 $('#accForm').onsubmit=e=>{e.preventDefault();const last4=normDigits($('#aLast4').value.trim());
   if(last4&&!/^\d{4}$/.test(last4)){toast('اكتب آخر 4 أرقام بس');return}
   const type=$('#aType').value;
-  act(store.add('accounts',{bank:$('#aBank').value.trim(),type,last4,limit:type==='credit'?(+$('#aLimit').value||0):0,color:UI.accColor,img:UI.pendingImg||'',ts:Date.now()}),'الحساب اتضاف');UI.pendingImg='';$('#aImg').value='';
-  ['#aBank','#aLast4','#aLimit'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accAdd').open=false};
+  const data={bank:$('#aBank').value.trim(),type,last4,limit:type==='credit'?(+$('#aLimit').value||0):0,color:UI.accColor};
+  if(type!=='credit'&&$('#aBal').value!==''){data.balance=+$('#aBal').value;data.balanceDate=todayISO()}else if(type!=='credit'&&UI.editAcc){data.balance=null}
+  if(UI.pendingImg)data.img=UI.pendingImg;
+  if(UI.editAcc){act(store.update('accounts',UI.editAcc,data),'الكارت اتعدّل');resetAccForm();$('#accAdd').open=false;return}
+  act(store.add('accounts',{...data,img:UI.pendingImg||'',ts:Date.now()}),'الحساب اتضاف');UI.pendingImg='';$('#aImg').value='';
+  ['#aBank','#aLast4','#aLimit','#aBal'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accAdd').open=false};
+function resetAccForm(){UI.editAcc=null;UI.pendingImg='';$('#aImg').value='';['#aBank','#aLast4','#aLimit','#aBal'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accFormTitle').textContent='حساب أو كارت جديد';$('#accSubmit').textContent='ضيف';$('#accCancel').hidden=true;accTypeUI()}
+$('#accCancel').onclick=()=>{resetAccForm();$('#accAdd').open=false};
+function editAcc(id){const a=accById(id);if(!a)return;UI.editAcc=a.id;$('#aBank').value=a.bank||'';$('#aType').value=a.type||'debit';$('#aLast4').value=a.last4||'';$('#aLimit').value=a.limit||'';$('#aBal').value=a.balance!=null?a.balance:'';
+  UI.accColor=a.color||'bank';renderSwatches();accTypeUI();$('#accFormTitle').textContent='تعديل الكارت';$('#accSubmit').textContent='احفظ التعديل';$('#accCancel').hidden=false;
+  const d=$('#accAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'})}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-accedit]');if(b){e.stopPropagation();editAcc(b.dataset.accedit)}},true);
 function goAcc(id){UI.accFilter=id;UI.filter='';setTab('tx');render()}
 document.addEventListener('keydown',e=>{const a=e.target.closest&&e.target.closest('[data-accopen]');if(a&&e.target===a&&(e.key==='Enter'||e.key===' ')){e.preventDefault();toggleAcc(a.dataset.accopen)}});
 
@@ -1472,6 +1491,7 @@ UI.range='month';
 $('#rFrom').value=todayISO().slice(0,8)+'01';$('#rTo').value=todayISO();
 $('#rangeChips').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;UI.range=b.dataset.r;render()});
 ['#rFrom','#rTo'].forEach(s=>$(s).addEventListener('change',()=>render()));
+$('#rAcc').addEventListener('change',e=>{UI.statAcc=e.target.value;render()});
 // stats budget
 $('#budgetEdit').onclick=()=>{const f=$('#budgetForm');f.hidden=!f.hidden;if(!f.hidden)$('#budgetIn').focus()};
 $('#budgetForm').onsubmit=e=>{e.preventDefault();act(store.saveSettings({budget:+$('#budgetIn').value||0}),'الميزانية اتحفظت');$('#budgetForm').hidden=true};
