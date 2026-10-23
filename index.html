@@ -276,6 +276,9 @@ svg.wchip{width:46px;height:34px;min-width:46px;flex:none;display:block;backgrou
 .plbar i{display:block;height:100%}
 details.card.fold{display:block}
 details.fold>summary>.row{flex:1;min-width:0}
+details.fold>summary>h2{flex:1;min-width:0}
+details.fold>summary>.btn{flex:none}
+.card .wallet{margin-inline:-2px}
 details.fold>summary>h2,details.fold>summary>.row{margin-inline-end:10px}
 details.add>summary::before{display:none}
 details.add>summary{justify-content:space-between}
@@ -1882,13 +1885,14 @@ $('#bkImport').onchange=async e=>{
     d.append(sum,inner);card.replaceWith(d);
     const k=keyOf(first,i);d.open=saved[k]!==false;d.addEventListener('toggle',()=>{saved[k]=d.open;save()});
   });
-  // section titles above lists -> tap to hide/show the list under them
+  // section titles above lists -> the title and its list become one card that opens and closes
   document.querySelectorAll('.panel .sect').forEach((s,i)=>{
-    s.classList.add('foldable');s.insertAdjacentHTML('beforeend',CHEV);s.setAttribute('role','button');s.tabIndex=0;
-    const k='sect|'+keyOf(s,i);if(saved[k]===false)s.classList.add('collapsed');
-    const tog=()=>{s.classList.toggle('collapsed');saved[k]=!s.classList.contains('collapsed');save()};
-    s.addEventListener('click',e=>{if(e.target.closest('button,a,input,select'))return;tog()});
-    s.addEventListener('keydown',e=>{if(e.target===s&&(e.key==='Enter'||e.key===' ')){e.preventDefault();tog()}});
+    const body=s.nextElementSibling;
+    const d=document.createElement('details');d.className='card fold';if(s.id)d.id=s.id;
+    const sum=document.createElement('summary');while(s.firstChild)sum.append(s.firstChild);sum.insertAdjacentHTML('beforeend',CHEV);
+    const inner=document.createElement('div');inner.className='foldin';if(body){body.style.marginTop='';inner.append(body)}
+    d.append(sum,inner);s.replaceWith(d);
+    const k='sect|'+keyOf(sum,i);d.open=saved[k]!==false;d.addEventListener('toggle',()=>{saved[k]=d.open;save()});
   });
   // add forms: arrow instead of the plus
   document.querySelectorAll('details.add>summary').forEach(sm=>{if(!sm.querySelector('.chev'))sm.insertAdjacentHTML('beforeend',CHEV)});
