@@ -9,9 +9,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="مصروفي">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.webmanifest?v=2">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=2">
+<link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
 <style>
 html{-webkit-text-size-adjust:100%;touch-action:manipulation}
 *{touch-action:manipulation}
@@ -187,6 +187,9 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 
 /* accounts: Apple-Wallet-style stack */
 .wallet{display:flex;flex-direction:column}
+.wcard{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.wallet.sorting .wcard{transition:margin-top .25s cubic-bezier(.32,.72,0,1)}
+.wcard.dragging{z-index:5;box-shadow:0 24px 50px rgb(0 0 0/.35)!important}
 .wcard{position:relative;isolation:isolate;z-index:0;width:100%;aspect-ratio:1.586/1;border-radius:20px;padding:18px 20px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 88%,#fff) 0%,var(--ac) 45%,color-mix(in srgb,var(--ac) 58%,#000) 100%);box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 -2px 10px rgb(0 0 0/.10),0 8px 20px rgb(0 0 0/.16);display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;overflow:hidden;transition:margin-top .55s cubic-bezier(.32,.72,0,1),transform .25s cubic-bezier(.32,.72,0,1),box-shadow .3s;will-change:margin-top,transform;-webkit-tap-highlight-color:transparent}
 .wcard:active{transform:scale(.985)}
 .wcard.open{box-shadow:inset 0 1px 0 rgb(255 255 255/.22),0 14px 30px rgb(0 0 0/.22)}
@@ -338,7 +341,7 @@ svg text{font-family:var(--body)}
 <div class="app" dir="rtl" lang="ar">
   <header class="top">
     <div class="r">
-      <h1 style="display:flex;align-items:center;gap:10px"><img src="icons/icon-192.png" width="42" height="42" alt="" style="border-radius:11px;flex:none;box-shadow:0 2px 8px rgb(0 0 0/.2)">مصروفي</h1>
+      <h1 style="display:flex;align-items:center;gap:10px"><img src="icons/icon-192.png?v=2" width="42" height="42" alt="" style="border-radius:11px;flex:none;box-shadow:0 2px 8px rgb(0 0 0/.2)">مصروفي</h1>
     </div>
     <div class="r">
       <span class="page" id="pageTitle">نظرة عامة</span>
@@ -365,6 +368,7 @@ svg text{font-family:var(--body)}
 
     <div class="sect"><h2>حساباتي وكروتي</h2><button class="btn link small" id="accToggle">+ حساب</button></div>
     <div class="wallet" id="homeAccts"></div>
+    <p class="muted small" id="walletHint" style="margin:-4px 0 0;text-align:center">اضغط مطوّل على كارت واسحبه عشان ترتّب الكروت</p>
     <details class="add" id="accAdd">
       <summary id="accFormTitle">حساب أو كارت جديد</summary>
       <div class="inner">
@@ -1073,6 +1077,7 @@ function renderHome(d){
   $('#hFootB').innerHTML=budget>0?`من ${money(budget)}`:'';
   $('#hInc').innerHTML=amtHTML(d.income);$('#hExp').innerHTML=amtHTML(d.expense);
   if(UI.openAcc&&!accById(UI.openAcc))UI.openAcc=null;
+  $('#walletHint').hidden=S.accounts.length<2;
   $('#homeAccts').innerHTML=S.accounts.length?S.accounts.map(a=>{
     const spent=sum(d.exp.filter(t=>t.accountId===a.id));const lim=+a.limit||0;
     const net={credit:'CREDIT',debit:'mada',wallet:'PAY',cash:'CASH'}[a.type]||'';
@@ -1453,6 +1458,7 @@ function renderMonthSel(){
   if(document.activeElement!==sel)sel.innerHTML=ms.map(m=>`<option value="${m}" ${m===curMonth?'selected':''}>${monthName(m)}</option>`).join('');
 }
 function render(){
+  S.accounts.sort((a,b)=>((a.order??1e9)-(b.order??1e9))||((a.ts||0)-(b.ts||0)));
   renderMonthSel();
   $('#storeBadge').textContent='بياناتك محفوظة على الجهاز ده بس. اعمل نسخة احتياطية كل فترة.';
   const d=monthData(curMonth);
@@ -1814,6 +1820,38 @@ document.querySelectorAll('.sheet').forEach(s=>{const b=s.querySelector('.body')
   b.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);b.style.transition='none';b.style.transform=`translateY(${dy}px)`},{passive:true});
   b.addEventListener('touchend',()=>{if(y0==null)return;y0=null;b.style.transition='';if(dy>90)hideSheet('#'+s.id);else b.style.transform='';dy=0});
 });
+
+/* ---------- reorder wallet cards: long-press and drag (like Apple Wallet) ---------- */
+(function(){
+  const W=$('#homeAccts');let el=null,timer=null,sx=0,sy=0,py=0,grab=0,tr=0,moved=false,justDragged=false;
+  const cards=()=>[...W.querySelectorAll('.wcard')];
+  const place=()=>{const r=el.getBoundingClientRect();const natural=r.top-tr;tr=py-grab-natural;el.style.transform=`translateY(${tr}px) scale(1.03)`};
+  function start(){if(!el)return;UI.openAcc=null;cards().forEach(c=>{c.classList.remove('open');c.setAttribute('aria-expanded','false')});
+    W.classList.add('sorting');el.classList.add('dragging');const r=el.getBoundingClientRect();grab=py-r.top;tr=0;el.style.transition='none';try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}place()}
+  function move(y){py=y;if(!el||!W.classList.contains('sorting'))return;place();
+    const cs=cards(),i=cs.indexOf(el),prev=cs[i-1],next=cs[i+1];
+    if(prev&&py<prev.getBoundingClientRect().top+34){W.insertBefore(el,prev);place()}
+    else if(next&&py>next.getBoundingClientRect().top+40){W.insertBefore(el,next.nextSibling);place()}}
+  async function end(){clearTimeout(timer);timer=null;if(!el)return;const d=el;el=null;
+    if(!W.classList.contains('sorting'))return;
+    d.style.transition='transform .35s cubic-bezier(.32,.72,0,1)';d.style.transform='';W.classList.remove('sorting');justDragged=true;setTimeout(()=>{justDragged=false;d.classList.remove('dragging');d.style.transition=''},380);
+    const ids=cards().map(c=>c.dataset.accopen);let changed=false;
+    for(let i=0;i<ids.length;i++){const a=accById(ids[i]);if(a&&a.order!==i){changed=true;a.order=i}}
+    if(changed){try{for(const id of ids){const a=accById(id);await store.update('accounts',id,{order:a.order})}toast('ترتيب الكروت اتحفظ')}catch(e){toast('ماتحفظش الترتيب')}}}
+  W.addEventListener('touchstart',e=>{const c=e.target.closest('.wcard');if(!c||e.target.closest('button')||e.touches.length!==1)return;
+    el=c;sx=e.touches[0].clientX;sy=py=e.touches[0].clientY;moved=false;clearTimeout(timer);timer=setTimeout(start,380)},{passive:true});
+  W.addEventListener('touchmove',e=>{if(!el)return;const t=e.touches[0];
+    if(!W.classList.contains('sorting')){if(Math.abs(t.clientX-sx)>8||Math.abs(t.clientY-sy)>8){clearTimeout(timer);el=null}return}
+    e.preventDefault();move(t.clientY)},{passive:false});
+  W.addEventListener('touchend',end);W.addEventListener('touchcancel',end);
+  // mouse (desktop): press and hold
+  W.addEventListener('mousedown',e=>{const c=e.target.closest('.wcard');if(!c||e.target.closest('button'))return;el=c;sx=e.clientX;sy=py=e.clientY;clearTimeout(timer);timer=setTimeout(start,380)});
+  window.addEventListener('mousemove',e=>{if(!el)return;if(!W.classList.contains('sorting')){if(Math.abs(e.clientY-sy)>8){clearTimeout(timer);el=null}return}move(e.clientY)});
+  window.addEventListener('mouseup',end);
+  W.addEventListener('contextmenu',e=>{if(e.target.closest('.wcard'))e.preventDefault()});
+  // a drag shouldn't count as a tap
+  document.addEventListener('click',e=>{if(justDragged&&e.target.closest('#homeAccts')){e.stopPropagation();e.preventDefault()}},true);
+})();
 
 /* ---------- boot ---------- */
 localStore.load();
