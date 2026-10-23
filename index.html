@@ -707,10 +707,10 @@ const TITLES={home:'نظرة عامة',tx:'العمليات',stats:'الإحصا
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nf=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:2});
-const nf0=new Intl.NumberFormat('ar-SA',{maximumFractionDigits:0});
+const nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:2});
+const nf0=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
 const fmt=n=>nf.format(Math.round((+n||0)*100)/100);
-const pct=n=>nf0.format(Math.round(n))+'٪';
+const pct=n=>nf0.format(Math.round(n))+'%';
 const money=n=>`<span class="num">${fmt(n)}</span> ر.س`;
 const bigMoney=n=>`<span class="num">${fmt(n)}</span><small>ر.س</small>`;
 const amtHTML=n=>`${fmt(n)}<small>ر.س</small>`;
@@ -719,9 +719,9 @@ const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const todayISO=()=>isoOf(new Date());
 const monthOf=iso=>(iso||'').slice(0,7);
 const shiftMonth=(m,k)=>{let[y,mo]=m.split('-').map(Number);mo+=k;while(mo>12){mo-=12;y++}while(mo<1){mo+=12;y--}return y+'-'+pad(mo)};
-const mFmt=new Intl.DateTimeFormat('ar-SA-u-ca-gregory',{month:'long',year:'numeric'});
-const mShort=new Intl.DateTimeFormat('ar-SA-u-ca-gregory',{month:'short'});
-const dFmt=new Intl.DateTimeFormat('ar-SA-u-ca-gregory',{day:'numeric',month:'long'});
+const mFmt=new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{month:'long',year:'numeric'});
+const mShort=new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{month:'short'});
+const dFmt=new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'long'});
 const monthName=m=>mFmt.format(new Date(m+'-01T12:00:00'));
 const monthShort=m=>mShort.format(new Date(m+'-01T12:00:00'));
 const dayLabel=iso=>iso?dFmt.format(new Date(iso+'T12:00:00')):'';
@@ -1156,7 +1156,7 @@ function renderPlanner(){
   if(!$('#plExpMonth').value)$('#plExpMonth').value=curMonthISO();
   const cm=curMonthISO();
   $('#plExp').innerHTML=planExp().length?planExp().map(e=>`<div class="item"><span class="badge sq" style="background:color-mix(in srgb,var(--k-gold) 20%,transparent);color:var(--k-gold)"><svg class="i" viewBox="0 0 24 24"><path d="M4 9h16v11H4z"/><path d="M12 9v11M4 13h16M12 9c-2-4-6-4-6-1.5S10 9 12 9c2 0 6 .9 6-1.5S14 5 12 9z"/></svg></span><div class="what"><b>${esc(e.name)}</b><span>${monthName(e.month)}${e.month<cm?' · فات':''}</span></div><div class="end"><span class="amt">${amtHTML(e.amount)}</span></div><button class="btn x" data-expdel="${e.id}" aria-label="امسح">✕</button></div>`).join(''):'';
-  const rows=[[3,'بعد ٣ شهور'],[6,'بعد ٦ شهور'],[12,'بعد سنة'],[24,'بعد سنتين']];
+  const rows=[[3,'بعد 3 شهور'],[6,'بعد 6 شهور'],[12,'بعد سنة'],[24,'بعد سنتين']];
   const max=Math.max(...rows.map(([n])=>planAt(n).total),1);
   $('#plRes').innerHTML=rows.map(([n,l])=>{const r=planAt(n);const w=v=>(Math.max(0,v)/max*100).toFixed(2)+'%';
     return`<div class="plrow"><div class="row between" style="flex-wrap:nowrap"><span><b>${l}</b> <span class="muted small">${monthName(addMonths(todayISO(),n).slice(0,7))}</span></span><span class="amt">${amtHTML(r.total)}</span></div>
