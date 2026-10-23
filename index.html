@@ -854,7 +854,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 <div class="sheet" id="sheet" dir="rtl" lang="ar" aria-hidden="true">
   <form class="body" id="txForm">
     <div class="grab"></div>
-    <div class="row between"><h2 style="font-size:1.2rem">حركة جديدة</h2><button type="button" class="btn x" id="sheetClose" aria-label="اقفل">✕</button></div>
+    <div class="row between"><h2 style="font-size:1.2rem" id="txSheetTitle">حركة جديدة</h2><button type="button" class="btn x" id="sheetClose" aria-label="اقفل">✕</button></div>
     <div class="seg" id="txType"><button type="button" data-v="expense" aria-pressed="true">مصروف</button><button type="button" data-v="income" aria-pressed="false">دخل</button></div>
     <div class="bigamt"><input id="txAmt" type="number" inputmode="decimal" min="0" step="0.01" required placeholder="0" aria-label="المبلغ"><span class="muted">ر.س</span></div>
     <div class="catgrid" id="txCats"></div>
@@ -863,7 +863,8 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <label>التاريخ<input id="txDate" type="date" required></label>
     </div>
     <label>ملاحظة<input id="txNote" placeholder="مثلاً: مقاضي الأسبوع"></label>
-    <button class="btn primary big">ضيف</button>
+    <button class="btn primary big" id="txSubmit">ضيف</button>
+    <button type="button" class="btn link small" id="txDelete" hidden style="color:var(--bad)">امسح العملية دي</button>
   </form>
 </div>
 
@@ -1061,16 +1062,28 @@ const accById=id=>S.accounts.find(a=>a.id===id);
 const accShort=a=>a?`${a.bank} · ${ACC_TYPE[a.type]||''}${a.last4?' •'+a.last4:''}`:'';
 function getDefAcc(){try{return localStorage.getItem(LS+'.acc')||''}catch(e){return''}}
 function setDefAcc(v){try{localStorage.setItem(LS+'.acc',v)}catch(e){}}
+// card/account hints inside an SMS: masked numbers (**2779, *79, xx4583) and "card/account ... 2779"
+function cardTokens(t){const s=new Set();
+  for(const m of t.matchAll(/[*xX•#]+\s*(\d{2,4})(?!\d)/g))s.add(m[1]);
+  for(const m of t.matchAll(/(?:بطاقة|البطاقة|بطاقتك|بطاقتكم|كارت|card|ending|المنتهية|منتهية|حساب|الحساب|account|acc)[^\d\n]{0,20}(\d{2,4})(?!\d)/gi))s.add(m[1]);
+  return[...s]}
+function smsType(t){return/ائتمان|ائتمانية|credit|visa|فيزا|master|ماستر|amex/i.test(t)?'credit':/مدى|mada|debit|خصم مباشر|حساب جاري/i.test(t)?'debit':/stc ?pay|urpay|محفظة|wallet|apple ?pay|أبل باي|ابل باي/i.test(t)?'wallet':''}
 function matchAccount(t){
   if(!S.accounts.length)return'';
-  const digits=[...t.matchAll(/(?<!\d)(\d{4})(?!\d)/g)].map(m=>m[1]);
-  const byLast=S.accounts.filter(a=>a.last4&&digits.includes(a.last4));
+  const toks=cardTokens(t),learned=S.settings.smsMap||{};
+  for(const k of toks)if(learned[k]&&accById(learned[k]))return learned[k];
+  const all4=[...t.matchAll(/(?<!\d)(\d{4})(?!\d)/g)].map(m=>m[1]);
+  let byLast=S.accounts.filter(a=>a.last4&&(all4.includes(a.last4)||toks.some(k=>k.length>=2&&a.last4.endsWith(k))));
   if(byLast.length===1)return byLast[0].id;
-  const bank=BANK_KEYS.find(([,re])=>re.test(t));
-  const pool=byLast.length?byLast:S.accounts;
-  if(bank){const hit=pool.filter(a=>bank[1].test(a.bank));
-    if(hit.length===1)return hit[0].id;
-    if(hit.length>1){const want=/ائتمان|credit|فيزا|visa|master/i.test(t)?'credit':/مدى|mada|debit|حساب/i.test(t)?'debit':'';const h=hit.find(a=>a.type===want);return(h||hit[0]).id}}
+  const pool=byLast.length?byLast:S.accounts,want=smsType(t);
+  // bank named in the SMS; compare by bank family so "Stc" matches "STC Pay" and "SNB" matches "الأهلي"
+  let bank=BANK_KEYS.find(([,re])=>re.test(t));const fam=n=>(bankOf(n)||[])[1]||'';
+  const bfam=bank?fam(bank[0]==='الأهلي'?'الأهلي':bank[0]==='STC'?'stc':bank[0]):'';
+  let hit=bank?pool.filter(a=>bank[1].test(a.bank)||(bfam&&fam(a.bank)===bfam)):pool;if(bank&&!hit.length){hit=pool;bank=null}
+  if(bank&&hit.length===1)return hit[0].id;
+  if(want){const h=hit.filter(a=>a.type===want);if(h.length===1)return h[0].id;
+    if(!bank){const anyT=S.accounts.filter(a=>a.type===want);if(anyT.length===1)return anyT[0].id}}
+  if(bank&&hit.length)return hit[0].id;
   return byLast.length?byLast[0].id:'';
 }
 const accOptions=sel=>`<option value="">بدون حساب</option>`+S.accounts.map(a=>`<option value="${a.id}" ${a.id===sel?'selected':''}>${esc(accShort(a))}</option>`).join('');
@@ -1243,7 +1256,7 @@ const budgetOf=d=>+S.settings.budget>0?+S.settings.budget:d.income;
 /* ---------- render ---------- */
 function txItem(t,del=true){
   const out=t.type==='expense';const a=accById(t.accountId);
-  const gk=out?guessIcon(t.note):'';return`<div class="item">${gk?`<span class="badge" style="background:color-mix(in srgb,${catColor(t.category)} 16%,transparent);color:${catColor(t.category)}">${iconSvg(gk)}</span>`:catCirc(t.category,!out)}
+  const gk=out?guessIcon(t.note):'';return`<div class="item" data-txedit="${t.id}" style="cursor:pointer">${gk?`<span class="badge" style="background:color-mix(in srgb,${catColor(t.category)} 16%,transparent);color:${catColor(t.category)}">${iconSvg(gk)}</span>`:catCirc(t.category,!out)}
   <div class="what"><b>${esc(t.note||t.category)}</b><span>${esc(t.category)}${a?' · '+esc(a.bank)+' '+(ACC_TYPE[a.type]||''):''}${t.source==='sms'?' · رسالة':t.source==='sub'?' · اشتراك':''}</span></div>
   <div class="end"><span class="amt ${out?'':'in'}">${out?'':'+'}${amtHTML(t.amount)}</span><span class="muted small">${dayLabel(t.date)}</span></div>
   ${del?`<button class="btn x" data-del="tx:${t.id}" aria-label="امسح">✕</button>`:'<span></span>'}</div>`;
@@ -1760,14 +1773,24 @@ $('#aColor').addEventListener('click',e=>{const b=e.target.closest('button');if(
 ['#txDate','#flDate','#sNext','#svDate'].forEach(s=>$(s).value=todayISO());
 
 // sheet
-function openSheet(){showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
-function closeSheet(){hideSheet('#sheet')}
+function openSheet(){UI.editTx=null;$('#txSheetTitle').textContent='حركة جديدة';$('#txSubmit').textContent='ضيف';$('#txDelete').hidden=true;$('#txAmt').value='';$('#txNote').value='';showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
+function closeSheet(){hideSheet('#sheet');UI.editTx=null}
 $('#sheetClose').onclick=closeSheet;
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classList.contains('open'))closeSheet()});
 $('#txForm').onsubmit=e=>{e.preventDefault();const amount=+$('#txAmt').value;if(!(amount>0))return;
-  act(store.add('tx',{type:UI.txType,amount,category:UI.txCat,note:$('#txNote').value.trim(),date:$('#txDate').value,accountId:$('#txAcc').value||'',source:'manual',ts:Date.now()}),'اتضاف');
+  const data={type:UI.txType,amount,category:UI.txCat,note:$('#txNote').value.trim(),date:$('#txDate').value,accountId:$('#txAcc').value||''};
+  if(UI.editTx){act(store.update('tx',UI.editTx,data),'اتحفظ التعديل')}else act(store.add('tx',{...data,source:'manual',ts:Date.now()}),'اتضاف');
   $('#txAmt').value='';$('#txNote').value='';closeSheet()};
+// edit any transaction later: tap it in a list
+function editTx(id){const t=S.tx.find(x=>x.id===id);if(!t)return;UI.editTx=t.id;
+  UI.txType=t.type==='income'?'income':'expense';document.querySelectorAll('#txType button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===UI.txType));
+  UI.txCat=t.category||'تاني';showSheet('#sheet');renderCatGrid();fillAccSelects();
+  $('#txAmt').value=t.amount;$('#txNote').value=t.note||'';$('#txDate').value=t.date||todayISO();$('#txAcc').value=accById(t.accountId)?t.accountId:'';
+  $('#txSheetTitle').textContent='تعديل العملية';$('#txSubmit').textContent='احفظ التعديل';$('#txDelete').hidden=false}
+document.addEventListener('click',e=>{const it=e.target.closest('[data-txedit]');if(!it||e.target.closest('button'))return;editTx(it.dataset.txedit)});
+$('#txDelete').onclick=()=>{const b=$('#txDelete');if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='متأكد؟ دوس تاني عشان تمسح';setTimeout(()=>{b.dataset.armed='';b.textContent='امسح العملية دي'},3000);return}
+  const id=UI.editTx;b.dataset.armed='';b.textContent='امسح العملية دي';closeSheet();if(id)act(store.remove('tx',id),'اتمسحت العملية')};
 
 $('#quickForm').onsubmit=e=>{e.preventDefault();const q=parseQuick($('#quickIn').value);
   if(!q||!(q.amount>0)){toast('اكتب مبلغ، مثلاً: 25 مواصلات');return}
@@ -1834,7 +1857,7 @@ $('#smsParse').onclick=()=>{
   if(!out.length)toast('مش لاقي مبالغ في الكلام ده. اتأكد إنها رسايل بنك فيها المبلغ.');
   else if(fail)toast(`${fail} رسالة ماعرفتش أقرا منها مبلغ`);
 };
-$('#pendList').addEventListener('input',e=>{const row=e.target.closest('.pend');if(!row)return;const p=S.pending[+row.dataset.i];const f=e.target.dataset.f;
+$('#pendList').addEventListener('input',e=>{const row=e.target.closest('.pend');if(!row)return;const p=S.pending[+row.dataset.i];const f=e.target.dataset.f;if(f==='accountId'&&e.target.value){const toks=cardTokens(normDigits(p.src));if(toks.length){const map={...(S.settings.smsMap||{})};toks.forEach(k=>map[k]=e.target.value);act(store.saveSettings({smsMap:map}));toast('هفتكر الكارت ده للرسايل الجاية','ok')}}
   if(f==='on')p.on=e.target.checked;else if(f==='amount')p.amount=+e.target.value;else p[f]=e.target.value;
   if(f==='type'){p.category=guessCat(p.src,p.type);renderPending()}});
 $('#pendCancel').onclick=()=>{S.pending=[];renderPending()};
