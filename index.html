@@ -511,8 +511,9 @@ svg text{font-family:var(--body)}
     </div>
 
     <div class="sec" data-sec="log">
-    <div class="card" id="svLogCard">
-      <h2>سجّل تحويش شهر</h2>
+    <details class="card fold" id="svLogCard">
+      <summary><h2>سجّل تحويش شهر</h2><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <div class="foldin">
       <form id="svLogForm" class="fields">
         <label>الشهر<input id="svLogMonth" type="month" required></label>
         <label>حوّشت كام؟ (ر.س)<input id="svLogAmt" type="number" min="0" step="any" inputmode="decimal" required placeholder="مثلاً 2000"></label>
@@ -521,7 +522,8 @@ svg text{font-family:var(--body)}
       </form>
       <div class="row between" style="margin-top:4px"><h3 style="font-size:.95rem">حوّشت كام كل شهر</h3><span class="muted small" id="svByMonthSum"></span></div>
       <div class="cats" id="svByMonth"></div>
-    </div>
+      </div>
+    </details>
     </div>
 
     <div class="sec" data-sec="plan">
@@ -592,7 +594,7 @@ svg text{font-family:var(--body)}
           <label>الحالة<select id="flStatus"><option value="paid">اتقبضت</option><option value="pending">لسه مستني</option></select></label>
           <label class="check" style="grid-column:1/-1"><input type="checkbox" id="flToSave"> ضيف المبلغ ده على التحويش</label>
           <label id="flSavePotWrap" hidden>في أنهي تحويش؟<select id="flSavePot"></select></label>
-          <button class="btn primary">ضيف</button>
+          <button class="btn primary" id="flSubmit">ضيف</button>
         </form>
         <button type="button" class="btn link small" id="flCancel" hidden>إلغاء التعديل</button>
         <label class="check"><input type="checkbox" id="flInIncome"> احسب فلوس الفريلانس ضمن دخلي في الرئيسية</label>
@@ -1289,8 +1291,10 @@ function renderFreelance(){
   $('#flClientsTitle').textContent='أكتر العملاء دفعاً';
   $('#flClients').innerHTML=arr.length?arr.map(([c,v])=>`<div class="cat"><span class="circ" style="background:color-mix(in srgb,var(--k-bill) 18%,transparent);color:var(--k-bill);font-weight:700">${esc(initial(c))}</span><div style="min-width:0"><span>${esc(c)}</span><div class="bar6"><i style="width:${(v/amax*100).toFixed(1)}%;background:var(--k-bill)"></i></div></div><span class="amt" style="font-size:.92rem">${amtHTML(v)}</span></div>`).join(''):emptyBox('العملاء هيظهروا هنا.');
   $('#flPending').innerHTML=pend.length?pend.sort(byDateDesc).map(flItem).join(''):emptyBox('مفيش فلوس متأخرة عند حد.');
-  $('#flListTitle').textContent='اتقبض في '+monthName(curMonth);
-  $('#flList').innerHTML=paidM.length?paidM.sort(byDateDesc).map(flItem).join(''):emptyBox('مفيش فلوس فريلانس اتقبضت الشهر ده.');
+  const allPaid=S.freelance.filter(f=>f.status==='paid').sort(byDateDesc);
+  $('#flListTitle').textContent=`كل الشغل اللي اتقبض (${nf0.format(allPaid.length)})`;
+  const grp={};allPaid.forEach(f=>{const m=monthOf(f.date)||'—';(grp[m]=grp[m]||[]).push(f)});
+  $('#flList').innerHTML=allPaid.length?Object.keys(grp).sort().reverse().map(m=>`<div class="row between" style="padding:8px 4px 0"><b>${m==='—'?'من غير تاريخ':monthName(m)}</b><span class="muted small">${money(grp[m].reduce((a,f)=>a+flSar(f),0))}</span></div>${grp[m].map(flItem).join('')}`).join(''):emptyBox('لسه ما سجّلتش شغل اتقبض.');
   $('#flInIncome').checked=!!S.settings.freelanceInIncome;
   const cur=$('#flCur').value,rate=$('#flRate');
   if(document.activeElement!==rate&&!rate.value){const r=(S.settings.lastRate||{})[cur]||PEG[cur];if(r)rate.value=r}
@@ -1449,7 +1453,7 @@ $('#plExpForm').onsubmit=e=>{e.preventDefault();const amount=+$('#plExpAmt').val
   act(store.saveSettings({expected:[...(S.settings.expected||[]),item]}),'اتضافت للتوقعات');$('#plExpName').value='';$('#plExpAmt').value=''};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-expdel]');if(!b)return;act(store.saveSettings({expected:(S.settings.expected||[]).filter(x=>x.id!==b.dataset.expdel)}),'اتشالت')});
 // freelance
-function resetFlForm(){UI.editFl=null;$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
+function resetFlForm(){UI.editFl=null;$('#flSubmit').textContent='ضيف';$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
 $('#flCancel').onclick=()=>{resetFlForm();$('#flAdd').open=false};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-fledit]');if(!b)return;const f=S.freelance.find(x=>x.id===b.dataset.fledit);if(!f)return;
   UI.editFl=f.id;fillFlSavePot();
@@ -1457,7 +1461,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-fledit]');
   $('#flAmt').value=f.amount||'';$('#flCur').value=f.currency||'SAR';$('#flRate').value=f.currency==='SAR'?'':(f.rate||'');$('#flRateWrap').hidden=(f.currency||'SAR')==='SAR';
   $('#flFee').value=+f.fee||'';$('#flDate').value=f.date||todayISO();$('#flStatus').value=f.status||'paid';
   const saved=S.savings.some(s=>s.flId===f.id);$('#flToSave').checked=!!(f.toSave||saved);$('#flSavePotWrap').hidden=!$('#flToSave').checked;if(f.savePot&&S.pots.some(p=>p.id===f.savePot))$('#flSavePot').value=f.savePot;
-  $('#flFormTitle').textContent='تعديل الشغلانة';$('#flCancel').hidden=false;const d=$('#flAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})});
+  $('#flFormTitle').textContent='تعديل الشغلانة';$('#flSubmit').textContent='احفظ التعديل';$('#flCancel').hidden=false;const d=$('#flAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})});
 $('#flToSave').addEventListener('change',e=>{$('#flSavePotWrap').hidden=!e.target.checked;fillFlSavePot()});
 $('#flCur').onchange=()=>{const c=$('#flCur').value;$('#flRate').value=(S.settings.lastRate||{})[c]||PEG[c]||'';renderFreelance()};
 $('#flForm').onsubmit=e=>{e.preventDefault();const cur=$('#flCur').value;const amount=+$('#flAmt').value;const rate=cur==='SAR'?1:+$('#flRate').value;
