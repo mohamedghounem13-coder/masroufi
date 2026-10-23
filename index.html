@@ -267,6 +267,8 @@ details.fold[open] .chev{transform:rotate(180deg)}
 .reordering .sec>:not(.secbar){display:none}
 .secbar .btn{padding:4px 12px}
 .card .potwrap{background:var(--soft)}
+.potwrap.flash{animation:potflash 1.6s ease}
+@keyframes potflash{0%,40%{box-shadow:0 0 0 2px var(--brand-ink)}100%{box-shadow:0 0 0 0 transparent}}
 .potwrap{background:var(--surface);border-radius:18px;overflow:hidden}
 .potwrap>.item{background:none}
 .potdet{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--soft);padding-top:12px}
@@ -564,6 +566,7 @@ svg text{font-family:var(--body)}
           <label>متحوّش فين؟<select id="svWhere"></select></label>
           <label>مصدره منين؟<select id="svSource"></select></label>
           <label>محوّش كام دلوقتي؟ (ر.س)<input id="svStart" type="number" min="0" step="any" inputmode="decimal" required placeholder="مثلاً 20000"></label>
+          <label>من تاريخ<input id="svDate" type="date"></label>
           <label>ملاحظة (اختياري)<input id="svNoteIn" placeholder="مثلاً: حساب ادخار، سبائك 50 جرام"></label>
           <button class="btn primary">احفظ</button>
         </form>
@@ -575,10 +578,10 @@ svg text{font-family:var(--body)}
 
     <div class="sec" data-sec="log">
     <details class="card fold" id="svLogCard">
-      <summary><h2>سجّل تحويش شهر</h2><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
+      <summary><h2>سجّل تحويش</h2><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></summary>
       <div class="foldin">
       <form id="svLogForm" class="fields">
-        <label>الشهر<input id="svLogMonth" type="month" required></label>
+        <label>التاريخ<input id="svLogMonth" type="date" required></label>
         <label>حوّشت كام؟ (ر.س)<input id="svLogAmt" type="number" min="0" step="any" inputmode="decimal" required placeholder="مثلاً 2000"></label>
         <label>حطّيته فين؟<select id="svLogPot"></select></label>
         <button class="btn primary">سجّل</button>
@@ -1347,8 +1350,9 @@ function renderPlanner(){
 function renderSvLog(){
   const sel=$('#svLogPot');if(document.activeElement!==sel){const v=sel.value;
     sel.innerHTML=S.pots.map(p=>`<option value="${p.id}">${esc(potWhere(p).label)}${p.note?' · '+esc(p.note):''}</option>`).join('')+`<option value="__new">مكان جديد</option>`;
-    if(v&&[...sel.options].some(o=>o.value===v))sel.value=v;}
-  if(!$('#svLogMonth').value)$('#svLogMonth').value=todayISO().slice(0,7);
+    let lp='';try{lp=localStorage.getItem(LS+'.lastPot')||''}catch(e){}
+    const want=v||lp;if(want&&[...sel.options].some(o=>o.value===want))sel.value=want;}
+  if(!$('#svLogMonth').value)$('#svLogMonth').value=todayISO();
   const by={};S.pots.forEach(p=>potHistory(p).forEach(g=>g.items.forEach(x=>{if(x.label==='كان معاك وقت ما ضفته')return;by[g.m]=(by[g.m]||0)+x.amount})));
   const ms=Object.keys(by).filter(m=>by[m]).sort().reverse().slice(0,12);
   const max=Math.max(...ms.map(m=>Math.abs(by[m])),1);
@@ -1512,7 +1516,7 @@ $('#txCats').addEventListener('click',e=>{const b=e.target.closest('[data-cat]')
 $('#sColor').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;UI.subColor=b.dataset.c;renderSwatches()});
 $('#aColor').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;UI.accColor=b.dataset.c;renderSwatches()});
 
-['#txDate','#flDate','#sNext'].forEach(s=>$(s).value=todayISO());
+['#txDate','#flDate','#sNext','#svDate'].forEach(s=>$(s).value=todayISO());
 
 // sheet
 function openSheet(){showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
@@ -1602,7 +1606,7 @@ $('#pendAdd').onclick=async()=>{
 };
 
 // savings
-function resetSvForm(){UI.editPot=null;['#svStart','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
+function resetSvForm(){$('#svDate').value=todayISO();$('#svDate').closest('label').hidden=false;UI.editPot=null;['#svStart','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
 $('#svForm').onsubmit=async e=>{e.preventDefault();
   const want=+$('#svStart').value||0,base={where:$('#svWhere').value,source:$('#svSource').value,monthly:0,note:$('#svNoteIn').value.trim()};
   const p=UI.editPot&&S.pots.find(x=>x.id===UI.editPot);
@@ -1614,7 +1618,7 @@ $('#svForm').onsubmit=async e=>{e.preventDefault();
       await store.update('pots',p.id,{...base,startDate:todayISO()});
       if(diff)await store.add('savings',{potId:p.id,amount:Math.abs(diff),kind:diff>0?'in':'out',date:todayISO(),note:'تعديل الرصيد',ts:Date.now()});
       toast('التحويش اتعدّل');
-    }else{await store.add('pots',{...base,start:want,startDate:todayISO(),ts:Date.now()});toast('التحويش اتضاف')}
+    }else{const sd=$('#svDate').value||todayISO();await store.add('pots',{...base,start:want,startDate:todayISO(),firstDate:sd,ts:Date.now()});toast('التحويش اتضاف')}
   }catch(err){toast('ماتحفظش. جرّب تاني.')}
   resetSvForm();$('#svAdd').open=false};
 document.addEventListener('submit',e=>{const f=e.target.closest('[data-potmove]');if(!f)return;e.preventDefault();
@@ -1625,14 +1629,14 @@ $('#svCancel').onclick=()=>{resetSvForm();$('#svAdd').open=false};
 $('#svGoalForm').onsubmit=e=>{e.preventDefault();act(store.saveSettings({goalName:$('#svGoalNameIn').value.trim(),goalAmount:+$('#svGoalAmtIn').value||0}),'الهدف اتحفظ')};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-potedit]');if(!b)return;const p=S.pots.find(x=>x.id===b.dataset.potedit);if(!p)return;
   UI.editPot=p.id;fillSvSelects();$('#svWhere').value=p.where;$('#svSource').value=p.source||'other';$('#svStart').value=Math.round(potNow(p)*100)/100;$('#svNoteIn').value=p.note||'';
-  $('#svFormTitle').textContent='تعديل التحويش';$('#svCancel').hidden=false;const d=$('#svAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'})});
+  $('#svDate').closest('label').hidden=true;$('#svFormTitle').textContent='تعديل التحويش';$('#svCancel').hidden=false;const d=$('#svAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'})});
 
 $('#svLogForm').onsubmit=async e=>{e.preventDefault();const amount=+$('#svLogAmt').value;if(!(amount>0))return;
-  const m=$('#svLogMonth').value||todayISO().slice(0,7);const date=m===todayISO().slice(0,7)?todayISO():m+'-01';
+  const raw=$('#svLogMonth').value||todayISO();const date=raw.length===7?raw+'-01':raw;const m=date.slice(0,7);
   try{let pid=$('#svLogPot').value;
     if(pid==='__new'||!pid){const ref=await store.add('pots',{where:'other',source:'other',start:0,startDate:todayISO(),monthly:0,note:'',ts:Date.now()});pid=ref&&ref.id||S.pots[S.pots.length-1].id}
-    await store.add('savings',{potId:pid,amount,kind:'in',date,note:'تحويش '+monthName(m),ts:Date.now()});
-    toast(`اتسجّل: ${monthName(m)} +${fmt(amount)} ر.س`);$('#svLogAmt').value='';
+    await store.add('savings',{potId:pid,amount,kind:'in',date,note:'تحويش',ts:Date.now()});
+    $('#svLogAmt').value='';try{localStorage.setItem(LS+'.lastPot',pid)}catch(e){}showPot(pid,`+${fmt(amount)} ر.س (${dayLabel(date)})`);
   }catch(err){toast('ماتحفظش. جرّب تاني.')}};
 document.addEventListener('click',e=>{
   const ed=e.target.closest('[data-depedit]');if(ed){const s=S.savings.find(x=>x.id===ed.dataset.depedit);if(!s)return;
@@ -1651,6 +1655,11 @@ $('#svReorder').onclick=()=>{const p=$('#p-save');const on=!p.classList.contains
 document.addEventListener('click',e=>{const b=e.target.closest('[data-secmove]');if(!b)return;const[k,d]=b.dataset.secmove.split(':');const o=secOrder();const i=o.indexOf(k),j=i+(+d);if(j<0||j>=o.length)return;[o[i],o[j]]=[o[j],o[i]];
   S.settings.saveOrder=o;applySecOrder();act(store.saveSettings({saveOrder:o}))});
 document.addEventListener('click',e=>{const it=e.target.closest('[data-fltap]');if(!it||e.target.closest('button'))return;const b=it.querySelector('[data-fledit]');if(b)b.click()});
+// after saving money into a place: open the list, unblur it, open that place and flash it
+function showPot(pid,msg){const fold=$('#svPotsFold');if(fold)fold.open=true;UI.reveal.pots=true;UI.openPot=pid;render();applyPriv();
+  const p=S.pots.find(x=>x.id===pid);const el=document.querySelector(`[data-potopen="${pid}"]`);
+  if(el){const w=el.closest('.potwrap');w.classList.remove('flash');void w.offsetWidth;w.classList.add('flash');w.scrollIntoView({behavior:'smooth',block:'center'})}
+  if(p)toast(`${msg} · ${potWhere(p).label} بقى ${fmt(potNow(p))} ر.س`)}
 // savings planner (estimates only, never touches real savings)
 $('#plMonthly').addEventListener('input',e=>{UI.plMonthly=+e.target.value||0;renderPlanner()});
 $('#plMonthly').addEventListener('change',e=>{const v=+e.target.value||0;act(store.saveSettings({planMonthly:v})).then(()=>{UI.plMonthly=null})});
