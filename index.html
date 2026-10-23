@@ -395,6 +395,7 @@ th{font-weight:500;color:var(--faint);font-size:.76rem}
 /* sheet */
 .sheet{position:fixed;inset:0;z-index:30;background:rgb(0 0 0/0);display:flex;align-items:flex-end;justify-content:center;visibility:hidden;pointer-events:none;transition:background .3s ease,visibility 0s linear .45s}
 .sheet.open{visibility:visible;pointer-events:auto;background:rgb(0 0 0/.32);transition:background .3s ease}
+.sheet .body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .sheet .body{transform:translateY(105%);transition:transform .45s cubic-bezier(.32,.72,0,1);will-change:transform;background:color-mix(in srgb,var(--bg) 84%,transparent)!important;-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);box-shadow:0 -10px 40px rgb(0 0 0/.18)}
 .sheet.open .body{transform:none}
 .sheet .body{background:var(--bg);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;max-height:92%;overflow:auto}
@@ -411,7 +412,9 @@ th{font-weight:500;color:var(--faint);font-size:.76rem}
 .sticky-add{position:sticky;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));z-index:4}
 .store{font-size:.75rem;color:var(--faint);text-align:center;margin-top:18px}
 svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;letter-spacing:0}
-.toast{position:fixed;bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:.88rem;z-index:40;max-width:calc(100% - 32px)}
+.toast{position:fixed;bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:12px;font-size:.88rem;z-index:40;max-width:calc(100% - 32px);display:flex;align-items:center;gap:8px;transition:opacity .3s,transform .3s;box-shadow:0 8px 24px rgb(0 0 0/.25)}
+.toast.ok svg.i{width:18px;height:18px;color:var(--good);flex:none}
+.toast.out{opacity:0;transform:translateX(-50%) translateY(8px)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -446,7 +449,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="mini"><div class="t"><span>المصروفات</span><span class="circ out"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></div><div class="v" id="hExp"></div></div>
     </div>
 
-    <div class="sect"><h2>حساباتي وكروتي</h2><button class="btn link small" id="accToggle">+ حساب</button></div>
+    <div class="sect"><h2>حساباتي وكروتي</h2></div>
     <div class="wallet" id="homeAccts"></div>
     <p class="muted small" id="walletHint" style="margin:-4px 0 0;text-align:center">اضغط مطوّل على كارت واسحبه عشان ترتّب الكروت</p>
     <details class="add" id="accAdd">
@@ -1050,8 +1053,8 @@ const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const initial=s=>(String(s||'؟').trim()[0]||'؟').toUpperCase();
 let curMonth=todayISO().slice(0,7);
 
-function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
-async function act(p,ok){try{await p;if(ok)toast(ok)}catch(e){toast(e&&e.code==='quota_exceeded'?'المساحة اتملت. امسح حركات قديمة وجرّب تاني.':'ماتحفظش. اتأكد من النت وجرّب تاني.')}}
+function toast(msg,kind){document.querySelectorAll('.toast').forEach(x=>x.remove());const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.innerHTML=(kind==='ok'?'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>':'')+'<span></span>';t.querySelector('span').textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('out'),2200);setTimeout(()=>t.remove(),2600)}
+async function act(p,ok){try{await p;if(ok)toast(/اتعدّل|اتحفظ/.test(ok)?'تم حفظ التعديل':ok,'ok')}catch(e){toast(e&&e.code==='quota_exceeded'?'المساحة اتملت. امسح حركات قديمة وجرّب تاني.':'ماتحفظش. اتأكد من النت وجرّب تاني.')}}
 
 /* ---------- accounts ---------- */
 const accById=id=>S.accounts.find(a=>a.id===id);
@@ -1606,7 +1609,7 @@ function renderDebts(){
   $('#dbOwedWrap').hidden=!owed.length;
   $('#dbOwedList').innerHTML=owed.slice().sort(ord).map(dbItem).join('');
 }
-function resetDbForm(){UI.editDebt=null;renderIconPicker('dbIcons','');$('#dbFormTitle').textContent='دين جديد';$('#dbSubmit').textContent='ضيف';$('#dbCancel').hidden=true;['#dbName','#dbAmt','#dbPre','#dbMon','#dbDue','#dbNote','#dbRate'].forEach(s=>$(s).value='');$('#dbCur').value='SAR';dbCurUI()}
+function resetDbForm(){setTimeout(returnToSpot,0);UI.editDebt=null;renderIconPicker('dbIcons','');$('#dbFormTitle').textContent='دين جديد';$('#dbSubmit').textContent='ضيف';$('#dbCancel').hidden=true;['#dbName','#dbAmt','#dbPre','#dbMon','#dbDue','#dbNote','#dbRate'].forEach(s=>$(s).value='');$('#dbCur').value='SAR';dbCurUI()}
 /* ---------- card artwork: chip + payment network ---------- */
 const CHIP_SVG='<svg class="wchip" viewBox="0 0 46 34" aria-hidden="true"><defs><linearGradient id="chipg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1F1F3"/><stop offset=".45" stop-color="#C3C3C8"/><stop offset="1" stop-color="#8F8F96"/></linearGradient></defs><rect x="1" y="1" width="44" height="32" rx="6" fill="url(#chipg)" stroke="rgba(0,0,0,.28)"/><path d="M1 11.5h12M1 22.5h12M33 11.5h12M33 22.5h12M13 1v32M33 1v32M13 17h20" stroke="rgba(0,0,0,.32)" stroke-width="1.1" fill="none"/></svg>';
 const NETS={visa:'فيزا',mastercard:'ماستركارد',mada:'مدى',amex:'أمريكان إكسبريس',none:'بدون'};
@@ -1688,7 +1691,7 @@ function renderPlanned(){
   $('#plnDone').innerHTML=done.length?done.slice().sort((a,b)=>(b.paidDate||'').localeCompare(a.paidDate||'')).map(p=>plnItem(p)).join(''):emptyBox('لسه مفيش حاجة اتدفعت.');
 }
 function pnCurUI(){const c=$('#pnCur').value;$('#pnRateWrap').hidden=c==='SAR';if(c!=='SAR'&&!$('#pnRate').value){const r=curRate(c);if(r)$('#pnRate').value=r}}
-function resetPnForm(){UI.editPn=null;renderIconPicker('pnIcons','');$('#pnAuto').checked=true;['#pnName','#pnAmt','#pnRate','#pnNote'].forEach(s=>$(s).value='');$('#pnCur').value='SAR';$('#pnRep').value='once';$('#pnDue').value=todayISO();pnCurUI();$('#plnFormTitle').textContent='مصروف جاي جديد';$('#pnSubmit').textContent='ضيف';$('#pnCancel').hidden=true}
+function resetPnForm(){setTimeout(returnToSpot,0);UI.editPn=null;renderIconPicker('pnIcons','');$('#pnAuto').checked=true;['#pnName','#pnAmt','#pnRate','#pnNote'].forEach(s=>$(s).value='');$('#pnCur').value='SAR';$('#pnRep').value='once';$('#pnDue').value=todayISO();pnCurUI();$('#plnFormTitle').textContent='مصروف جاي جديد';$('#pnSubmit').textContent='ضيف';$('#pnCancel').hidden=true}
 function flItem(f){
   const cur=f.currency==='SAR'?'':` · ${fmt(f.amount)} ${esc(f.currency)}`;
   return`<div class="item fl" data-fltap="${f.id}"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
@@ -1731,7 +1734,8 @@ function renderMonthSel(){if(typeof renderDatePill==='function'&&$('#dpMain'))re
   const ms=[...set].sort().reverse();const sel=$('#monthSel');
   if(document.activeElement!==sel)sel.innerHTML=ms.map(m=>`<option value="${m}" ${m===curMonth?'selected':''}>${monthName(m)}</option>`).join('');
 }
-function render(){
+function render(){const __y=window.scrollY;try{renderInner()}finally{if(Math.abs(window.scrollY-__y)>1)window.scrollTo(0,__y)}}
+function renderInner(){
   S.accounts.sort((a,b)=>((a.order??1e9)-(b.order??1e9))||((a.ts||0)-(b.ts||0)));
   renderMonthSel();
   $('#storeBadge').textContent='بياناتك محفوظة على الجهاز ده بس. اعمل نسخة احتياطية كل فترة.';
@@ -1773,7 +1777,6 @@ $('#quickAcc').onchange=e=>setDefAcc(e.target.value);
 $('#txAcc').onchange=e=>setDefAcc(e.target.value);
 
 // accounts
-$('#accToggle').onclick=()=>{const d=$('#accAdd');d.open=!d.open;if(d.open)$('#aBank').focus()};
 const accTypeUI=()=>{const c=$('#aType').value==='credit';$('#aLimitWrap').hidden=!c;$('#aBalLbl').textContent=c?'الرصيد المتاح دلوقتي (اختياري)':'الرصيد اللي فيه دلوقتي (اختياري)'};$('#aType').onchange=accTypeUI;accTypeUI();
 $('#accForm').onsubmit=e=>{e.preventDefault();const last4=normDigits($('#aLast4').value.trim());
   if(last4&&!/^\d{4}$/.test(last4)){toast('اكتب آخر 4 أرقام بس');return}
@@ -1784,7 +1787,7 @@ $('#accForm').onsubmit=e=>{e.preventDefault();const last4=normDigits($('#aLast4'
   if(UI.editAcc){act(store.update('accounts',UI.editAcc,data),'الكارت اتعدّل');resetAccForm();$('#accAdd').open=false;return}
   act(store.add('accounts',{...data,img:UI.pendingImg||'',ts:Date.now()}),'الحساب اتضاف');UI.pendingImg='';$('#aImg').value='';
   ['#aBank','#aLast4','#aLimit','#aBal'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accAdd').open=false};
-function resetAccForm(){UI.editAcc=null;UI.pendingImg='';$('#aImg').value='';$('#aNet').value='auto';['#aBank','#aLast4','#aLimit','#aBal'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accFormTitle').textContent='حساب أو كارت جديد';$('#accSubmit').textContent='ضيف';$('#accCancel').hidden=true;accTypeUI()}
+function resetAccForm(){setTimeout(returnToSpot,0);UI.editAcc=null;UI.pendingImg='';$('#aImg').value='';$('#aNet').value='auto';['#aBank','#aLast4','#aLimit','#aBal'].forEach(s=>$(s).value='');UI.accColor='bank';renderSwatches();$('#accFormTitle').textContent='حساب أو كارت جديد';$('#accSubmit').textContent='ضيف';$('#accCancel').hidden=true;accTypeUI()}
 $('#accCancel').onclick=()=>{resetAccForm();$('#accAdd').open=false};
 function editAcc(id){const a=accById(id);if(!a)return;UI.editAcc=a.id;$('#aBank').value=a.bank||'';$('#aType').value=a.type||'debit';$('#aLast4').value=a.last4||'';$('#aNet').value=a.network||'auto';$('#aLimit').value=a.limit||'';$('#aBal').value=a.balance!=null?a.balance:'';
   UI.accColor=a.color||'bank';renderSwatches();accTypeUI();$('#accFormTitle').textContent='تعديل الكارت';$('#accSubmit').textContent='احفظ التعديل';$('#accCancel').hidden=false;
@@ -1810,7 +1813,7 @@ $('#subForm').onsubmit=e=>{e.preventDefault();const amount=+$('#sAmt').value;if(
   act(store.add('subs',{...sdata,ts:Date.now()}),'الاشتراك اتضاف');
   $('#sName').value='';$('#sAmt').value='';UI.subColor=SWATCH[(SWATCH.indexOf(UI.subColor)+1)%SWATCH.length];renderSwatches()};
 
-function resetSubForm(){UI.editSub=null;$('#subFormTitle').textContent='اشتراك جديد';$('#subSubmit').textContent='ضيف';$('#subCancel').hidden=true;$('#sName').value='';$('#sAmt').value='';$('#sNext').value=todayISO();UI.kindTouched=false;$('#sKind').value='other'}
+function resetSubForm(){setTimeout(returnToSpot,0);UI.editSub=null;$('#subFormTitle').textContent='اشتراك جديد';$('#subSubmit').textContent='ضيف';$('#subCancel').hidden=true;$('#sName').value='';$('#sAmt').value='';$('#sNext').value=todayISO();UI.kindTouched=false;$('#sKind').value='other'}
 $('#subCancel').onclick=()=>{resetSubForm();$('#subAdd').open=false};
 function editSub(id){const s=S.subs.find(x=>x.id===id);if(!s)return;UI.editSub=s.id;UI.kindTouched=true;
   $('#sName').value=s.name||'';$('#sAmt').value=s.amount||'';$('#sCur').value=s.currency||'SAR';$('#sKind').value=s.kind||detectKind(s.name);
@@ -1843,7 +1846,7 @@ $('#pendAdd').onclick=async()=>{
 };
 
 // savings
-function resetSvForm(){renderIconPicker('svIcons','');$('#svDate').value=todayISO();$('#svDate').closest('label').hidden=false;UI.editPot=null;['#svStart','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
+function resetSvForm(){setTimeout(returnToSpot,0);renderIconPicker('svIcons','');$('#svDate').value=todayISO();$('#svDate').closest('label').hidden=false;UI.editPot=null;['#svStart','#svNoteIn'].forEach(s=>$(s).value='');$('#svFormTitle').textContent='إضافة تحويش';$('#svCancel').hidden=true}
 $('#svForm').onsubmit=async e=>{e.preventDefault();
   const want=+$('#svStart').value||0,base={where:$('#svWhere').value,source:$('#svSource').value,monthly:0,note:$('#svNoteIn').value.trim(),icon:$('#svIcons').dataset.sel||''};
   const p=UI.editPot&&S.pots.find(x=>x.id===UI.editPot);
@@ -1957,7 +1960,7 @@ document.addEventListener('click',async e=>{
       else{const nx=pnStep(p.due,p.repeat);await store.update('planned',p.id,{due:nx});toast(`${p.name} اتسجّل، والجاي ${dayLabel(nx)}`)}}
     catch(err){toast('ماتحفظش. جرّب تاني.')}pd.disabled=false}});
 // freelance
-function resetFlForm(){UI.editFl=null;$('#flSubmit').textContent='ضيف';$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
+function resetFlForm(){setTimeout(returnToSpot,0);UI.editFl=null;$('#flSubmit').textContent='ضيف';$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
 $('#flCancel').onclick=()=>{resetFlForm();$('#flAdd').open=false};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-fledit]');if(!b)return;const f=S.freelance.find(x=>x.id===b.dataset.fledit);if(!f)return;
   UI.editFl=f.id;fillFlSavePot();
@@ -2154,8 +2157,15 @@ $('#dateSheet').addEventListener('click',e=>{if(e.target.id==='dateSheet'){hideS
 $('#dsRange').onsubmit=e=>{e.preventDefault();UI.range='custom';$('#rFrom').value=$('#dsFrom').value;$('#rTo').value=$('#dsTo').value;hideSheet('#dateSheet');setTab('stats');render()};
 
 /* ---------- sliding sheets (drag down to close) ---------- */
-function showSheet(sel){const s=$(sel);s.setAttribute('aria-hidden','false');s.querySelector('.body').style.transform='';requestAnimationFrame(()=>s.classList.add('open'))}
-function hideSheet(sel){const s=$(sel);s.classList.remove('open');s.setAttribute('aria-hidden','true');s.querySelector('.body').style.transform=''}
+/* ---------- keep the page still ---------- */
+// remember where you were when you open something to edit, and go back there after saving or cancelling
+document.addEventListener('click',e=>{if(e.target.closest('[data-fledit],[data-subedit],[data-potedit],[data-debtedit],[data-pnedit],[data-accedit],[data-fltap],[data-subtap]'))UI.returnY=window.scrollY},true);
+function returnToSpot(){if(UI.returnY==null)return;const y=UI.returnY;UI.returnY=null;requestAnimationFrame(()=>window.scrollTo({top:y,behavior:'smooth'}))}
+let __lockY=0,__locks=0;
+function lockPage(){if(__locks++)return;__lockY=window.scrollY;const b=document.body.style;b.position='fixed';b.top=-__lockY+'px';b.left='0';b.right='0';b.width='100%'}
+function unlockPage(){if(!__locks||--__locks)return;const b=document.body.style;b.position='';b.top='';b.left='';b.right='';b.width='';window.scrollTo(0,__lockY)}
+function showSheet(sel){const s=$(sel);if(s.dataset.on!=='1'){s.dataset.on='1';lockPage()}s.setAttribute('aria-hidden','false');s.querySelector('.body').style.transform='';requestAnimationFrame(()=>s.classList.add('open'))}
+function hideSheet(sel){const s=$(sel);if(s.dataset.on==='1'){s.dataset.on='';unlockPage()}s.classList.remove('open');s.setAttribute('aria-hidden','true');s.querySelector('.body').style.transform=''}
 document.querySelectorAll('.sheet').forEach(s=>{const b=s.querySelector('.body');let y0=null,dy=0;
   b.addEventListener('touchstart',e=>{if(b.scrollTop>0||e.target.closest('input,select,textarea')){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
   b.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);b.style.transition='none';b.style.transform=`translateY(${dy}px)`},{passive:true});
