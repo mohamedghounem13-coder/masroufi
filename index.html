@@ -19,7 +19,10 @@ input:not(#txAmt),select,textarea{font-size:16px!important}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}
 img{max-width:100%}
 [hidden]{display:none!important}
-:root.f-lalezar{--display:"Lalezar","Alexandria","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root.f-lalezar{--display:"Lalezar","Alexandria","IBM Plex Sans Arabic",system-ui,sans-serif;--body:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif}
+:root.f-lalezar body,:root.f-lalezar button,:root.f-lalezar input,:root.f-lalezar select,:root.f-lalezar textarea{font-family:"Lalezar","IBM Plex Sans Arabic",system-ui,sans-serif;font-weight:400!important;letter-spacing:.01em}
+:root.f-lalezar body{line-height:1.7}
+:root.f-lalezar svg text{font-family:"Lalezar",sans-serif}
 :root.f-lalezar h1,:root.f-lalezar h2,:root.f-lalezar .page,:root.f-lalezar .hero .big{font-weight:400;letter-spacing:0}
 :root.f-lalezar .hero .big{font-size:clamp(2.5rem,11vw,3.3rem)}
 .backup{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
@@ -665,7 +668,7 @@ svg text{font-family:var(--body)}
   </section>
   <p class="store" id="storeBadge"></p>
   <div class="backup">
-    <button class="btn tiny" id="fontToggle" type="button">خط العناوين</button>
+    <button class="btn tiny" id="fontToggle" type="button">غيّر الخط</button>
     <button class="btn tiny" id="bkExport" type="button">نسخة احتياطية</button>
     <label class="btn tiny" style="flex-direction:row;font-size:.8rem;color:var(--fg)">استرجاع نسخة<input type="file" id="bkImport" accept="application/json,.json" hidden></label>
   </div>
@@ -1730,7 +1733,7 @@ $('#bkImport').onchange=async e=>{
 /* ---------- heading font ---------- */
 (function(){const set=v=>{document.documentElement.classList.toggle('f-lalezar',v==='lalezar');try{localStorage.setItem(LS+'.font',v)}catch(e){}};
   let v='alexandria';try{v=localStorage.getItem(LS+'.font')||'alexandria'}catch(e){}set(v);
-  $('#fontToggle').onclick=()=>{v=v==='lalezar'?'alexandria':'lalezar';set(v);toast(v==='lalezar'?'خط العناوين: لاله‌زار (الجديد)':'خط العناوين: الأصلي')};})();
+  $('#fontToggle').onclick=()=>{v=v==='lalezar'?'alexandria':'lalezar';set(v);toast(v==='lalezar'?'الخط: لاله‌زار (الجديد)':'الخط: الأصلي')};})();
 
 /* ---------- boot ---------- */
 localStore.load();
