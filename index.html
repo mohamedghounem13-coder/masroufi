@@ -193,6 +193,9 @@ details.add[open] summary#rListTitle::before{content:"⌃"}
 .plrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--soft)}
 .plbar{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;background:var(--soft)}
 .plbar i{display:block;height:100%}
+details.card.fold{display:block}
+details.card.fold>summary{padding:0}
+.foldin{display:flex;flex-direction:column;gap:14px;margin-top:14px}
 details.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
 details.fold>summary::-webkit-details-marker{display:none}
 details.fold .chev{transition:transform .3s cubic-bezier(.32,.72,0,1)}
@@ -508,8 +511,9 @@ svg text{font-family:var(--body)}
       <div class="cats" id="svByMonth"></div>
     </div>
 
-    <div class="card" id="svPlan">
-      <div class="row between"><h2>احسب هيبقى معاك كام</h2><span class="chip warn">توقّع بس</span></div>
+    <details class="card fold" id="svPlan">
+      <summary><h2>احسب هيبقى معاك كام</h2><span class="row" style="gap:8px;flex-wrap:nowrap"><span class="chip warn">توقّع بس</span><svg class="i chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span></summary>
+      <div class="foldin">
       <p class="muted small" style="margin:0">ده حساب للتخطيط، مش بيتضاف على تحويشك الحالي.</p>
       <label>لو حوّشت كل شهر (ر.س)<input id="plMonthly" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 1500"></label>
       <div class="row between"><h3 style="font-size:.95rem">فلوس متوقعة (بونص، عيدية، مستحقات...)</h3></div>
@@ -523,7 +527,8 @@ svg text{font-family:var(--body)}
       <div class="pllegend"><span><i style="background:var(--brand)"></i>معاك دلوقتي</span><span><i style="background:var(--good)"></i>التحويش الشهري</span><span><i style="background:var(--k-gold)"></i>فلوس متوقعة</span></div>
       <div class="list" id="plRes"></div>
       <div class="tip" id="plGoal" hidden></div>
-    </div>
+      </div>
+    </details>
 
     <div class="card" id="svGoalCard" hidden>
       <div class="row between"><h2 id="svGoalName"></h2><span class="chip good" id="svGoalPct"></span></div>
@@ -553,8 +558,8 @@ svg text{font-family:var(--body)}
       <div class="mini"><div class="t"><span>مستني يتقبض</span></div><div class="v" id="flPend"></div></div>
       <div class="mini"><div class="t"><span id="flYearLbl"></span></div><div class="v" id="flYear"></div></div>
     </div>
-    <details class="add">
-      <summary>شغل جديد</summary>
+    <details class="add" id="flAdd">
+      <summary id="flFormTitle">شغل جديد</summary>
       <div class="inner">
         <form id="flForm" class="fields">
           <label>العميل<input id="flClient" required placeholder="اسم العميل أو المنصة"></label>
@@ -571,6 +576,7 @@ svg text{font-family:var(--body)}
           <label id="flSavePotWrap" hidden>في أنهي تحويش؟<select id="flSavePot"></select></label>
           <button class="btn primary">ضيف</button>
         </form>
+        <button type="button" class="btn link small" id="flCancel" hidden>إلغاء التعديل</button>
         <label class="check"><input type="checkbox" id="flInIncome"> احسب فلوس الفريلانس ضمن دخلي في الرئيسية</label>
       </div>
     </details>
@@ -1141,7 +1147,7 @@ function potHistory(p){
 function potDetail(p){
   const hist=potHistory(p);
   return`<div class="potdet">${hist.length?hist.map(g=>`<div class="pm"><div class="row between"><b>${monthName(g.m)}</b><span class="amt ${g.total>=0?'in':''}" style="font-size:.92rem">${g.total>=0?'+':'−'}${amtHTML(Math.abs(g.total))}</span></div>
-    ${g.items.map(x=>`<div class="row between small muted" style="flex-wrap:nowrap"><span>${esc(x.label)} · ${dayLabel(x.date)}</span><span>${x.amount>=0?'+':'−'}${fmt(Math.abs(x.amount))}${x.id?` <button class="btn x" data-del="savings:${x.id}" aria-label="امسح">✕</button>`:''}</span></div>`).join('')}</div>`).join(''):'<div class="muted small">لسه مفيش حركة.</div>'}
+    ${g.items.map(x=>x.id&&UI.editDep===x.id?`<form class="row" data-depsave="${x.id}" style="flex-wrap:nowrap;gap:6px"><input type="number" min="0" step="any" inputmode="decimal" value="${Math.abs(x.amount)}" aria-label="المبلغ" required><input type="date" value="${x.date}" aria-label="التاريخ" style="max-width:9.5em"><button class="btn tiny">احفظ</button><button type="button" class="btn tiny" data-depcancel>إلغاء</button></form>`:`<div class="row between small muted" style="flex-wrap:nowrap"><span>${esc(x.label)} · ${dayLabel(x.date)}</span><span style="white-space:nowrap">${x.amount>=0?'+':'−'}${fmt(Math.abs(x.amount))}${x.id?` <button class="btn x" data-depedit="${x.id}" aria-label="عدّل">✎</button><button class="btn x" data-del="savings:${x.id}" aria-label="امسح">✕</button>`:''}</span></div>`).join('')}</div>`).join(''):'<div class="muted small">لسه مفيش حركة.</div>'}
     <form class="row potmove" data-potmove="${p.id}" style="flex-wrap:nowrap">
       <input type="number" min="0" step="any" inputmode="decimal" placeholder="المبلغ" required aria-label="المبلغ">
       <input type="date" value="${todayISO()}" aria-label="التاريخ" style="max-width:9.5em">
@@ -1244,7 +1250,7 @@ function flItem(f){
   return`<div class="item"><span class="badge sq" style="background:color-mix(in srgb,${flFieldColor(f.field)} 18%,transparent);color:${flFieldColor(f.field)}"><svg class="i" viewBox="0 0 24 24">${f.kind==='video'?'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="m16 10 5-3v10l-5-3z"/>':'<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'}</svg></span>
   <div class="what"><b>${esc(f.client)}${f.project?' · '+esc(f.project):''}</b><span>${f.field?esc(f.field)+' · ':''}${f.kind?FL_KIND[f.kind]+' · ':''}${dayLabel(f.date)}${cur}${+f.fee?` · عمولة ${fmt(f.fee)}`:''}</span></div>
   <div class="end"><span class="amt">${amtHTML(flSar(f))}</span>${f.status==='paid'?'<span class="chip good">اتقبضت</span>':'<span class="chip warn">مستني</span>'}</div>
-  <span class="row" style="gap:0;flex-wrap:nowrap">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:flSaved(f)?'<span class="chip good">في التحويش</span>':`<button class="btn tiny" data-fl2save="${f.id}">للتحويش</button>`}<button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
+  <span class="row" style="gap:0;flex-wrap:nowrap">${f.status==='pending'?`<button class="btn tiny" data-paid="${f.id}">اتقبضت</button>`:flSaved(f)?'<span class="chip good">في التحويش</span>':`<button class="btn tiny" data-fl2save="${f.id}">للتحويش</button>`}<button class="btn tiny" data-fledit="${f.id}">تعديل</button><button class="btn x" data-del="freelance:${f.id}" aria-label="امسح">✕</button></span></div>`;
 }
 function renderFreelance(){
   const y=curMonth.slice(0,4);
@@ -1400,6 +1406,13 @@ $('#svLogForm').onsubmit=async e=>{e.preventDefault();const amount=+$('#svLogAmt
     await store.add('savings',{potId:pid,amount,kind:'in',date,note:'تحويش '+monthName(m),ts:Date.now()});
     toast(`اتسجّل: ${monthName(m)} +${fmt(amount)} ر.س`);$('#svLogAmt').value='';
   }catch(err){toast('ماتحفظش. جرّب تاني.')}};
+document.addEventListener('click',e=>{
+  const ed=e.target.closest('[data-depedit]');if(ed){const s=S.savings.find(x=>x.id===ed.dataset.depedit);if(!s)return;
+    if(s.flId&&S.freelance.some(f=>f.id===s.flId)){setTab('freelance');setTimeout(()=>{const b=document.querySelector(`[data-fledit="${s.flId}"]`);if(b)b.click()},50);toast('المبلغ ده جاي من الفريلانس، عدّله من هنا');return}
+    UI.editDep=s.id;render();return}
+  if(e.target.closest('[data-depcancel]')){UI.editDep=null;render()}});
+document.addEventListener('submit',e=>{const f=e.target.closest('[data-depsave]');if(!f)return;e.preventDefault();const[a,d]=f.querySelectorAll('input');const amount=+a.value;if(!(amount>0))return;
+  const id=f.dataset.depsave;UI.editDep=null;act(store.update('savings',id,{amount,date:d.value||todayISO()}),'اتعدّل')});
 // savings planner (estimates only, never touches real savings)
 $('#plMonthly').addEventListener('input',e=>{UI.plMonthly=+e.target.value||0;renderPlanner()});
 $('#plMonthly').addEventListener('change',e=>{const v=+e.target.value||0;act(store.saveSettings({planMonthly:v})).then(()=>{UI.plMonthly=null})});
@@ -1408,12 +1421,26 @@ $('#plExpForm').onsubmit=e=>{e.preventDefault();const amount=+$('#plExpAmt').val
   act(store.saveSettings({expected:[...(S.settings.expected||[]),item]}),'اتضافت للتوقعات');$('#plExpName').value='';$('#plExpAmt').value=''};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-expdel]');if(!b)return;act(store.saveSettings({expected:(S.settings.expected||[]).filter(x=>x.id!==b.dataset.expdel)}),'اتشالت')});
 // freelance
+function resetFlForm(){UI.editFl=null;$('#flFormTitle').textContent='شغل جديد';$('#flCancel').hidden=true;['#flClient','#flProject','#flAmt','#flFee'].forEach(s=>$(s).value='');$('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;$('#flStatus').value='paid';$('#flDate').value=todayISO()}
+$('#flCancel').onclick=()=>{resetFlForm();$('#flAdd').open=false};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fledit]');if(!b)return;const f=S.freelance.find(x=>x.id===b.dataset.fledit);if(!f)return;
+  UI.editFl=f.id;fillFlSavePot();
+  $('#flClient').value=f.client||'';$('#flField').value=f.field||'تاني';$('#flKind').value=f.kind||'photo';$('#flProject').value=f.project||'';
+  $('#flAmt').value=f.amount||'';$('#flCur').value=f.currency||'SAR';$('#flRate').value=f.currency==='SAR'?'':(f.rate||'');$('#flRateWrap').hidden=(f.currency||'SAR')==='SAR';
+  $('#flFee').value=+f.fee||'';$('#flDate').value=f.date||todayISO();$('#flStatus').value=f.status||'paid';
+  const saved=S.savings.some(s=>s.flId===f.id);$('#flToSave').checked=!!(f.toSave||saved);$('#flSavePotWrap').hidden=!$('#flToSave').checked;if(f.savePot&&S.pots.some(p=>p.id===f.savePot))$('#flSavePot').value=f.savePot;
+  $('#flFormTitle').textContent='تعديل الشغلانة';$('#flCancel').hidden=false;const d=$('#flAdd');d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})});
 $('#flToSave').addEventListener('change',e=>{$('#flSavePotWrap').hidden=!e.target.checked;fillFlSavePot()});
 $('#flCur').onchange=()=>{const c=$('#flCur').value;$('#flRate').value=(S.settings.lastRate||{})[c]||PEG[c]||'';renderFreelance()};
 $('#flForm').onsubmit=e=>{e.preventDefault();const cur=$('#flCur').value;const amount=+$('#flAmt').value;const rate=cur==='SAR'?1:+$('#flRate').value;
   if(!(amount>0))return;if(cur!=='SAR'&&!(rate>0)){toast('اكتب سعر التحويل للريال');$('#flRate').focus();return}
   const toSave=$('#flToSave').checked,savePot=$('#flSavePot').value;
-  (async()=>{try{await store.add('freelance',{toSave,savePot,client:$('#flClient').value.trim(),field:$('#flField').value,kind:$('#flKind').value,project:$('#flProject').value.trim(),amount,currency:cur,rate,fee:+$('#flFee').value||0,date:$('#flDate').value,status:$('#flStatus').value,ts:Date.now()});
+  const data={toSave,savePot,client:$('#flClient').value.trim(),field:$('#flField').value,kind:$('#flKind').value,project:$('#flProject').value.trim(),amount,currency:cur,rate,fee:+$('#flFee').value||0,date:$('#flDate').value,status:$('#flStatus').value,ts:Date.now()};const editId=UI.editFl;
+  (async()=>{try{if(editId){const old=S.freelance.find(x=>x.id===editId);delete data.ts;await store.update('freelance',editId,data);const f=S.freelance.find(x=>x.id===editId);
+      const dep=S.savings.find(s=>s.flId===editId);if(dep){if(f.status==='paid'&&toSave)await store.update('savings',dep.id,{amount:Math.round(flSar(f)*100)/100,date:f.date,note:'فريلانس: '+(f.client||'')});else await store.remove('savings',dep.id)}
+      else if(toSave&&f.status==='paid')await flToSavings(f,savePot);
+      resetFlForm();toast('الشغلانة اتعدّلت');return}
+    await store.add('freelance',data);
     const f=S.freelance[S.freelance.length-1];if(toSave&&f&&f.status==='paid')await flToSavings(f,savePot);
     toast(toSave?(f&&f.status==='paid'?'اتسجّل واتضاف على التحويش':'اتسجّل، وهيتضاف على التحويش لما تقبضه'):'اتسجّل')}catch(err){toast('ماتحفظش. جرّب تاني.')}})();
   $('#flToSave').checked=false;$('#flSavePotWrap').hidden=true;
