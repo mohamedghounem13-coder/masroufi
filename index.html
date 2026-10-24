@@ -122,18 +122,18 @@ details.add>summary .hic{order:-1}
 .icpick button svg.i{width:19px;height:19px}
 .icpick button.auto{grid-column:span 2;aspect-ratio:auto;font:inherit;font-size:.74rem;padding:6px}
 .icpick button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
-:root.t-neon{--bg:#050A06;--surface:#0E1710;--soft:#162219;--line:#1E2C22;--fg:#EEF8EF;--muted:#8DA394;--faint:#4F6455;--brand:#7EE36A;--brand-ink:#9BF58A;--lime:#B8F7A8;--on-brand:#06210C;--good:#7BEA6B;--bad:#FF6B5E;--warn:#F5C35B;--k-wine:#2C7A3A;color-scheme:dark}
-:root.t-neon body{background:radial-gradient(120% 60% at 50% -10%,#123A1C 0%,transparent 60%),var(--bg)}
-:root.t-neon .hero{background:radial-gradient(80% 110% at 15% 0%,#E2FFD6 0%,transparent 55%),linear-gradient(135deg,#B3F99B,#7EE36A 55%,#4DBE57);color:#06210C;box-shadow:0 12px 40px rgb(124 234 104/.35),inset 0 1px 0 rgb(255 255 255/.5)}
-:root.t-neon .hero .ic{background:rgb(6 33 12/.12)}
-:root.t-neon .hero .meter{background:rgb(6 33 12/.16)}
-:root.t-neon .hero .meter i{background:#06210C}
+:root.t-neon{--bg:var(--n-bg,#050A06);--surface:var(--n-surf,#0E1710);--soft:var(--n-soft,#162219);--line:var(--n-line,#1E2C22);--fg:#F1F6F2;--muted:var(--n-muted,#8DA394);--faint:var(--n-faint,#4F6455);--on-brand:var(--n-on,#06210C);--good:#7BEA6B;--bad:#FF6B5E;--warn:#F5C35B;--k-wine:#2C7A3A;color-scheme:dark}
+:root.t-neon body{background:radial-gradient(120% 60% at 50% -10%,var(--n-glowbg,#123A1C) 0%,transparent 60%),var(--bg)}
+:root.t-neon .hero{background:radial-gradient(80% 110% at 15% 0%,var(--n-pale) 0%,transparent 55%),linear-gradient(135deg,var(--n-hi),var(--brand) 55%,var(--n-lo));color:var(--on-brand);box-shadow:0 12px 40px rgb(var(--ng)/.35),inset 0 1px 0 rgb(255 255 255/.5)}
+:root.t-neon .hero .ic{background:color-mix(in srgb,var(--on-brand) 12%,transparent)}
+:root.t-neon .hero .meter{background:color-mix(in srgb,var(--on-brand) 16%,transparent)}
+:root.t-neon .hero .meter i{background:var(--on-brand)}
 :root.t-neon .hero::before{background:rgb(255 255 255/.12);border-color:rgb(255 255 255/.3)}
 :root.t-neon .hero::after{background:rgb(255 255 255/.08);border-color:rgb(255 255 255/.2)}
-:root.t-neon .hero [data-priv]:not(.shown)::after{color:#06210C}
-:root.t-neon .card,:root.t-neon .mini,:root.t-neon details.add,:root.t-neon .profile,:root.t-neon .empty{background:linear-gradient(180deg,#121E15,#0B130D);border:1px solid rgb(140 242 122/.09)}
-:root.t-neon .btn.primary{box-shadow:0 0 22px rgb(126 227 106/.35)}
-:root.t-neon .monthpick{background:#121E15;border:1px solid rgb(140 242 122/.1)}
+:root.t-neon .hero [data-priv]:not(.shown)::after{color:var(--on-brand)}
+:root.t-neon .card,:root.t-neon .mini,:root.t-neon details.add,:root.t-neon .profile,:root.t-neon .empty{background:linear-gradient(180deg,var(--n-card1,#121E15),var(--n-card2,#0B130D));border:1px solid rgb(var(--ng)/.09)}
+:root.t-neon .btn.primary{box-shadow:0 0 22px rgb(var(--ng)/.35)}
+:root.t-neon .monthpick{background:var(--n-card1,#121E15);border:1px solid rgb(var(--ng)/.1)}
 /* floating capsule bottom bar: icons in circles, the active one opens into a pill with its name */
 .nav{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;width:max-content;max-width:calc(100% - 24px);padding:6px!important;border-radius:999px;background:rgb(18 18 20/.88)!important;-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgb(255 255 255/.08)!important;box-shadow:0 12px 30px rgb(0 0 0/.35)}
 .nav .in{display:flex!important;gap:6px;padding:0!important;max-width:none}
@@ -142,7 +142,7 @@ details.add>summary .hic{order:-1}
 .nav button[aria-selected="true"]{width:auto;padding:0 18px 0 16px!important;background:#fff!important;color:#121214!important}
 .nav button[aria-selected="true"] span{display:inline}
 .nav button[aria-selected="true"] svg.i{transform:none}
-:root.t-neon .nav button[aria-selected="true"]{background:var(--brand)!important;color:var(--on-brand)!important;box-shadow:0 0 18px rgb(126 227 106/.4)}
+:root.t-neon .nav button[aria-selected="true"]{background:var(--brand)!important;color:var(--on-brand)!important;box-shadow:0 0 18px rgb(var(--ng)/.4)}
 .sticky-add{bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
 /* "add card" button carved into the bottom corner of the last card */
 .wallet{position:relative}
@@ -155,7 +155,7 @@ details.add>summary .hic{order:-1}
 .wallet .wcard:nth-last-child(2) .wbot>.nlogo,.wallet .wcard:nth-last-child(2) .wbot>.nvisa,.wallet .wcard:nth-last-child(2) .wbot>.namex,.wallet .wcard:nth-last-child(2) .wbot>.addnet{position:absolute;top:-78px;right:0;z-index:2}
 .wallet .wcard:nth-last-child(2) .wnfc{visibility:hidden}
 .wallet .wcard:nth-last-child(2) .wtop .net{visibility:hidden}
-:root.t-neon .wnotch,:root.t-neon .wnotch::before,:root.t-neon .wnotch::after{--surface:#0B130D}
+:root.t-neon .wnotch,:root.t-neon .wnotch::before,:root.t-neon .wnotch::after{--surface:var(--n-card2,#0B130D)}
 :root.t-neon .addcardbtn{background:var(--brand);color:var(--on-brand)}
 :root.t-neon .addcardbtn .pl{background:var(--on-brand);color:var(--brand)}
 /* Ruqaa: titles and labels in Ruqaa, numbers and small text stay in a clear face */
@@ -199,18 +199,23 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 .fields>*{min-width:0}
 .sheet .body{overflow-x:hidden;touch-action:pan-y;overscroll-behavior-x:none}
 .sheet .body .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
-/* real wallet look: back panel with frame + label, cards tucked inside, stitched front pocket */
-.pocket{height:calc(var(--ph) + 300px);border-radius:36px;background:linear-gradient(180deg,#2B2C30,#1B1C1F);box-shadow:inset 0 0 0 7px rgb(255 255 255/.07),inset 0 2px 0 7px rgb(255 255 255/.04),0 14px 34px rgb(0 0 0/.4);overflow:hidden}
-.pocket::before{content:"محفظتي";position:absolute;top:16px;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:1.05rem;color:rgb(255 255 255/.32);letter-spacing:0}
-.pocket .peek{left:9%;right:9%;height:126px;border-radius:16px;border:2px solid rgb(255 255 255/.85);box-shadow:0 -3px 12px rgb(0 0 0/.25)}
-.pocket .pouch{left:12px;right:12px;bottom:12px;height:178px;border-radius:28px;
-  background:radial-gradient(90% 110% at 90% 115%,color-mix(in srgb,var(--brand) 55%,transparent),transparent 62%),radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.07),transparent 70%),linear-gradient(180deg,#2A2C30,#141518);
-  box-shadow:0 -10px 22px rgb(0 0 0/.45),inset 0 1px 0 rgb(255 255 255/.16),inset 0 -14px 26px rgb(0 0 0/.45),inset 10px 0 16px rgb(255 255 255/.03)}
-.pocket .pouch::before{inset:10px;border:1.6px dashed rgb(255 255 255/.26);border-radius:20px}
-.pocket .pouch .pt{font-size:.85rem;opacity:.6}
-.pocket .pouch .pv{font-size:2rem}
-:root.t-neon .pocket .pouch{background:radial-gradient(90% 110% at 90% 115%,rgb(126 227 106/.55),transparent 62%),radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.07),transparent 70%),linear-gradient(180deg,#22272A,#121514)}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]):not(.t-neon) .pocket{background:linear-gradient(180deg,#E9E8E5,#D9D7D2);box-shadow:inset 0 0 0 7px rgb(255 255 255/.6),0 14px 30px rgb(0 0 0/.12)}:root:not([data-theme="dark"]):not(.t-neon) .pocket::before{color:rgb(0 0 0/.3)}:root:not([data-theme="dark"]):not(.t-neon) .pocket .pouch{background:radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.7),transparent 70%),linear-gradient(180deg,#F1F0ED,#DEDCD7);box-shadow:0 -10px 20px rgb(0 0 0/.12),inset 0 1px 0 #fff,inset 0 -10px 18px rgb(0 0 0/.06)}}
+/* compact wallet (like the reference): small square-ish body, 3 fanned cards, stitched front pocket with total */
+.pocket{width:min(100%,320px);isolation:isolate;margin:4px auto 6px;height:calc(var(--ph) + 238px);border-radius:34px;background:linear-gradient(180deg,#2C2D31,#1C1D20);box-shadow:0 0 0 6px rgb(255 255 255/.07),0 0 0 7px rgb(255 255 255/.03),0 16px 36px rgb(0 0 0/.45);overflow:hidden}
+.pocket::before{content:"محفظتي";position:absolute;top:12px;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:.95rem;color:rgb(255 255 255/.34)}
+.pocket .peek{left:11%;right:11%;height:96px;border-radius:14px;padding:9px 12px;border:2px solid rgb(255 255 255/.9);box-shadow:0 -3px 10px rgb(0 0 0/.3);transform-origin:50% 100%}
+.pocket .pk-bank{font-size:.8rem;gap:6px}
+.pocket .pk-bank .blogo{width:22px;height:22px;border-radius:6px}
+.pocket .pk-net .nlogo{height:18px}.pocket .pk-net .nvisa{font-size:.95rem}
+.pocket .pouch{left:8px;right:8px;bottom:8px;height:150px;border-radius:26px;padding:12px;gap:0;
+  background:radial-gradient(110% 130% at 100% 125%,rgb(var(--ng,126 227 106)/.9),rgb(var(--ng,126 227 106)/.25) 45%,transparent 72%),radial-gradient(70% 70% at 5% 0%,rgb(255 255 255/.08),transparent 70%),linear-gradient(180deg,#26282C,#131416);
+  box-shadow:0 -10px 20px rgb(0 0 0/.5),inset 0 1.5px 0 rgb(255 255 255/.18),inset 0 -12px 22px rgb(0 0 0/.5),inset 12px 0 18px rgb(255 255 255/.04),inset -12px 0 18px rgb(0 0 0/.25)}
+.pocket .pouch::before{inset:8px;border:1.4px dashed rgb(255 255 255/.3);border-radius:19px}
+.pocket .pouch .pt{font-size:.78rem;opacity:.6}
+.pocket .pouch .pv{font-size:1.75rem;margin:2px 0}
+.pocket .pouch .ps{display:none}
+.pocket .pk-add{bottom:14px;left:14px;padding:4px 11px 4px 4px!important;font-size:.72rem!important;gap:7px}
+.pocket .pk-add .pl{width:22px!important;height:22px!important;font-size:1rem}
+.pocket .pouch .pv[data-priv]:not(.shown){margin-bottom:22px}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
@@ -2327,20 +2332,22 @@ document.querySelectorAll('.sheet').forEach(s=>{const b=s.querySelector('.body')
 
 /* ---------- app colour ---------- */
 const THEMES={
-  neon:   {n:'نيون',  b:'#7EE36A',bd:'#7EE36A',inkD:'#9BF58A',s:'#C9FBB8',sd:'#B8F7A8',full:true},
-  wine:   {n:'خمري',   b:'#761A36',bd:'#6E1832',inkD:'#EC9DB2',s:'#F6D3C4',sd:'#F0C6B7'},
-  navy:   {n:'كحلي',   b:'#1F3A68',bd:'#1E3760',inkD:'#9DB8EC',s:'#CFDDF5',sd:'#B9CDEE'},
-  emerald:{n:'زمردي',  b:'#0F5E4A',bd:'#0E5644',inkD:'#7FD1B2',s:'#C9EBDA',sd:'#B3E1CB'},
-  teal:   {n:'بترولي', b:'#0E5566',bd:'#0D4E5E',inkD:'#86CFE0',s:'#CBE9F0',sd:'#B5DEE8'},
-  purple: {n:'بنفسجي', b:'#4B2A8C',bd:'#462782',inkD:'#B9A2F0',s:'#DDD2F8',sd:'#CBBDF2'},
-  coffee: {n:'قهوة',   b:'#5B3A29',bd:'#553626',inkD:'#E0B897',s:'#F1DCC8',sd:'#E6CBB3'},
-  black:  {n:'أسود',   b:'#1F1F23',bd:'#2A2A30',inkD:'#E5E5EA',s:'#E4E0DA',sd:'#D6D1CA'}
+  neon:  {n:'أخضر',   b:'#7EE36A'},
+  pink:  {n:'وردي',   b:'#FF4FB8'},
+  cyan:  {n:'سماوي',  b:'#3FE3F2'},
+  blue:  {n:'أزرق',   b:'#5B8CFF'},
+  purple:{n:'بنفسجي', b:'#B57BFF'},
+  orange:{n:'برتقالي',b:'#FF8A3D'},
+  yellow:{n:'أصفر',   b:'#F2E640'},
+  red:   {n:'أحمر',   b:'#FF4D5E'}
 };
-function applyTheme(k){const t=THEMES[k]||THEMES.wine;document.documentElement.classList.toggle('t-neon',k==='neon');let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
-  const dark=`--brand:${t.bd};--brand-ink:${t.inkD};--lime:${t.sd};--k-wine:${t.bd}`;
-  st.textContent=`:root{--brand:${t.b};--brand-ink:${t.b};--lime:${t.s};--k-wine:${t.b}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
-  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t.b);}
-function getTheme(){try{if(!localStorage.getItem(LS+'.neonV')){localStorage.setItem(LS+'.neonV','1');localStorage.setItem(LS+'.theme','neon')}return localStorage.getItem(LS+'.theme')||'neon'}catch(e){return'neon'}}
+// mix two hex colors: w = share of a
+function hexMix(a,b,w){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);return'#'+A.map((v,i)=>Math.round(v*w+B[i]*(1-w)).toString(16).padStart(2,'0')).join('')}
+function applyTheme(k){const t=THEMES[k]||THEMES.neon,b=t.b;document.documentElement.classList.add('t-neon');let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
+  const rgb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16)).join(' '),K='#030403';
+  st.textContent=`html:root.t-neon{--brand:${b};--brand-ink:${hexMix(b,'#ffffff',.8)};--lime:${hexMix(b,'#ffffff',.6)};--k-wine:${hexMix(b,'#000000',.45)};--ng:${rgb};--n-hi:${hexMix(b,'#ffffff',.72)};--n-lo:${hexMix(b,'#000000',.68)};--n-pale:${hexMix(b,'#ffffff',.25)};--n-on:${hexMix(b,'#000000',.13)};--n-bg:${hexMix(b,K,.035)};--n-surf:${hexMix(b,K,.07)};--n-soft:${hexMix(b,'#0a0b0a',.1)};--n-line:${hexMix(b,'#0a0b0a',.14)};--n-card1:${hexMix(b,'#0b0c0b',.08)};--n-card2:${hexMix(b,K,.05)};--n-muted:${hexMix(b,'#8f9690',.15)};--n-faint:${hexMix(b,'#4d544f',.15)};--n-glowbg:${hexMix(b,K,.2)}}`;
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',hexMix(b,K,.035));}
+function getTheme(){try{if(!localStorage.getItem(LS+'.neonV')){localStorage.setItem(LS+'.neonV','1');localStorage.setItem(LS+'.theme','neon')}const k=localStorage.getItem(LS+'.theme');return THEMES[k]?k:'neon'}catch(e){return'neon'}}
 function renderThemes(){const cur=getTheme();$('#themeRow').innerHTML=Object.entries(THEMES).map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${k===cur}" aria-label="${t.n}"><i style="background:${t.b}"></i><span>${t.n}</span></button>`).join('')}
 $('#themeRow').addEventListener('click',e=>{const b=e.target.closest('[data-theme-pick]');if(!b)return;try{localStorage.setItem(LS+'.theme',b.dataset.themePick)}catch(err){}applyTheme(b.dataset.themePick);renderThemes();render()});
 applyTheme(getTheme());renderThemes();
@@ -2379,13 +2386,13 @@ document.addEventListener('click',e=>{if(!e.target.closest('[data-addcard]'))ret
 
 /* ---------- wallet pocket ---------- */
 function pocketHTML(d){
-  const acc=S.accounts,show=acc.slice(-4),n=show.length;
+  const acc=S.accounts,show=acc.slice(-3),n=show.length;
   const own=acc.filter(a=>a.type!=='credit'&&a.balance!=null),hasBal=own.length>0;
   const total=hasBal?own.reduce((s,a)=>s+(+a.balance||0),0):sum(d.exp.filter(t=>accById(t.accountId)));
-  const peeks=show.map((a,i)=>{const dom=bankDomain(a.bank),rot=[-4,3,-2,2][i%4]*(n>1?1:0);
-    return`<div class="peek" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${cardLook(a)};top:${52+i*40}px;transform:rotate(${rot*0.4}deg);z-index:${i+1}">
+  const peeks=show.map((a,i)=>{const dom=bankDomain(a.bank),rot=n>1?[[-4,2.5,0],[-3,0],[0]][3-n][i]:0;
+    return`<div class="peek" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${cardLook(a)};top:${40+i*30}px;transform:rotate(${rot}deg);z-index:${i+1}">
       <span class="pk-bank">${dom?`<span class="blogo"><img class="sl" src="${favURL(dom,64)}" alt=""></span>`:''}${esc(a.bank)}</span><span class="pk-net">${netOf(a)==='none'?'':netLogo(a)}</span></div>`}).join('');
-  return`<div class="pocket" data-pocket role="button" tabindex="0" aria-label="افتح المحفظة" style="--ph:${Math.max(0,n-1)*40}px">${peeks}
+  return`<div class="pocket" data-pocket role="button" tabindex="0" aria-label="افتح المحفظة" style="--ph:${Math.max(0,n-1)*30}px">${peeks}
     <div class="pouch"><span class="pt">${hasBal?'إجمالي رصيدك':'صرفت الشهر ده من كروتك'}</span><b class="pv" data-priv="wallet">${bigMoney(total)}</b>
       <span class="ps">${acc.length} ${acc.length>=3&&acc.length<=10?'كروت':'كارت'} · دوس عشان تشوفهم</span>
       <button type="button" class="addcardbtn pk-add" data-addcard><span class="pl">+</span>ضيف كارت</button></div></div>`}
