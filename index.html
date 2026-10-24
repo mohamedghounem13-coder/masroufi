@@ -122,6 +122,41 @@ details.add>summary .hic{order:-1}
 .icpick button svg.i{width:19px;height:19px}
 .icpick button.auto{grid-column:span 2;aspect-ratio:auto;font:inherit;font-size:.74rem;padding:6px}
 .icpick button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+:root.t-neon{--bg:#050A06;--surface:#0E1710;--soft:#162219;--line:#1E2C22;--fg:#EEF8EF;--muted:#8DA394;--faint:#4F6455;--brand:#7EE36A;--brand-ink:#9BF58A;--lime:#B8F7A8;--on-brand:#06210C;--good:#7BEA6B;--bad:#FF6B5E;--warn:#F5C35B;--k-wine:#2C7A3A;color-scheme:dark}
+:root.t-neon body{background:radial-gradient(120% 60% at 50% -10%,#123A1C 0%,transparent 60%),var(--bg)}
+:root.t-neon .hero{background:radial-gradient(80% 110% at 15% 0%,#E2FFD6 0%,transparent 55%),linear-gradient(135deg,#B3F99B,#7EE36A 55%,#4DBE57);color:#06210C;box-shadow:0 12px 40px rgb(124 234 104/.35),inset 0 1px 0 rgb(255 255 255/.5)}
+:root.t-neon .hero .ic{background:rgb(6 33 12/.12)}
+:root.t-neon .hero .meter{background:rgb(6 33 12/.16)}
+:root.t-neon .hero .meter i{background:#06210C}
+:root.t-neon .hero::before{background:rgb(255 255 255/.12);border-color:rgb(255 255 255/.3)}
+:root.t-neon .hero::after{background:rgb(255 255 255/.08);border-color:rgb(255 255 255/.2)}
+:root.t-neon .hero [data-priv]:not(.shown)::after{color:#06210C}
+:root.t-neon .card,:root.t-neon .mini,:root.t-neon details.add,:root.t-neon .profile,:root.t-neon .empty{background:linear-gradient(180deg,#121E15,#0B130D);border:1px solid rgb(140 242 122/.09)}
+:root.t-neon .btn.primary{box-shadow:0 0 22px rgb(126 227 106/.35)}
+:root.t-neon .monthpick{background:#121E15;border:1px solid rgb(140 242 122/.1)}
+/* floating capsule bottom bar: icons in circles, the active one opens into a pill with its name */
+.nav{left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;width:max-content;max-width:calc(100% - 24px);padding:6px!important;border-radius:999px;background:rgb(18 18 20/.88)!important;-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgb(255 255 255/.08)!important;box-shadow:0 12px 30px rgb(0 0 0/.35)}
+.nav .in{display:flex!important;gap:6px;padding:0!important;max-width:none}
+.nav button{flex-direction:row!important;gap:8px;width:48px;height:48px;padding:0!important;border-radius:999px;justify-content:center;background:rgb(255 255 255/.07);color:rgb(255 255 255/.82)!important;transition:background .35s cubic-bezier(.32,.72,0,1),color .25s,padding .35s cubic-bezier(.32,.72,0,1),width .35s cubic-bezier(.32,.72,0,1)}
+.nav button span{display:none;font-size:.86rem!important;font-weight:600}
+.nav button[aria-selected="true"]{width:auto;padding:0 18px 0 16px!important;background:#fff!important;color:#121214!important}
+.nav button[aria-selected="true"] span{display:inline}
+.nav button[aria-selected="true"] svg.i{transform:none}
+:root.t-neon .nav button[aria-selected="true"]{background:var(--brand)!important;color:var(--on-brand)!important;box-shadow:0 0 18px rgb(126 227 106/.4)}
+.sticky-add{bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}
+/* "add card" button carved into the bottom corner of the last card */
+.wallet{position:relative}
+.wnotch{position:absolute;right:0;bottom:0;z-index:6;padding:9px 0 0 9px;background:var(--surface);border-top-left-radius:26px}
+.wnotch::before,.wnotch::after{content:"";position:absolute;width:26px;height:26px;background:radial-gradient(circle at 0 0,transparent 25.5px,var(--surface) 26px);pointer-events:none}
+.wnotch::before{right:0;top:-26px}
+.wnotch::after{left:-26px;bottom:0}
+.addcardbtn{appearance:none;border:0;display:flex;align-items:center;gap:10px;background:var(--fg);color:var(--bg);font:inherit;font-weight:600;font-size:.9rem;padding:7px 16px 7px 7px;border-radius:999px;cursor:pointer;direction:rtl}
+.addcardbtn .pl{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bg);color:var(--fg);font-size:1.2rem;line-height:1}
+.wallet .wcard:nth-last-child(2) .wbot>.nlogo,.wallet .wcard:nth-last-child(2) .wbot>.nvisa,.wallet .wcard:nth-last-child(2) .wbot>.namex,.wallet .wcard:nth-last-child(2) .wbot>.addnet{position:absolute;top:16px;right:20px;z-index:2}
+.wallet .wcard:nth-last-child(2) .wtop .net{visibility:hidden}
+:root.t-neon .wnotch,:root.t-neon .wnotch::before,:root.t-neon .wnotch::after{--surface:#0B130D}
+:root.t-neon .addcardbtn{background:var(--brand);color:var(--on-brand)}
+:root.t-neon .addcardbtn .pl{background:var(--on-brand);color:var(--brand)}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
@@ -1264,13 +1299,18 @@ function txItem(t,del=true){
 const emptyBox=msg=>`<div class="empty">${msg}</div>`;
 
 function renderHome(d){
-  const budget=budgetOf(d);const left=budget-d.expense;
-  $('#hLbl').textContent=+S.settings.budget>0?'المتبقي من الميزانية':'المتبقي من دخلك';
-  $('#hBig').innerHTML=bigMoney(left);
-  const p=budget>0?Math.max(0,Math.min(100,left/budget*100)):0;
-  $('#hMeter').style.width=p+'%';
-  $('#hFootA').innerHTML=budget>0?`${pct(p)} متبقي`:'حط ميزانية من الإحصائيات';
-  $('#hFootB').innerHTML=budget>0?`من ${money(budget)}`:'';
+  // the big card says plainly what it shows: budget left, money left from income, or just what you spent
+  const B=+S.settings.budget||0,mName=monthName(curMonth).split(' ')[0],meterWrap=$('#hMeter').parentElement;
+  if(B>0){const left=B-d.expense,p=Math.max(0,Math.min(100,left/B*100));
+    $('#hLbl').textContent=left>=0?`فاضل من ميزانية ${mName}`:`عدّيت ميزانية ${mName} بـ`;
+    $('#hBig').innerHTML=bigMoney(Math.abs(left));meterWrap.hidden=false;$('#hMeter').style.width=p+'%';
+    $('#hFootA').innerHTML=left>=0?`صرفت ${money(d.expense)}`:'خفّف الصرف الكام يوم الجايين';$('#hFootB').innerHTML=`الميزانية ${money(B)}`;}
+  else if(d.income>0){const left=d.income-d.expense,p=Math.max(0,Math.min(100,left/d.income*100));
+    $('#hLbl').textContent=left>=0?`معاك من فلوس ${mName}`:`صرفت أكتر من دخلك بـ`;
+    $('#hBig').innerHTML=bigMoney(Math.abs(left));meterWrap.hidden=false;$('#hMeter').style.width=p+'%';
+    $('#hFootA').innerHTML=`دخلك ${money(d.income)} − صرفت ${money(d.expense)}`;$('#hFootB').innerHTML='';}
+  else{$('#hLbl').textContent=`صرفت في ${mName}`;$('#hBig').innerHTML=bigMoney(d.expense);meterWrap.hidden=true;
+    $('#hFootA').innerHTML='<button type="button" class="btn tiny" data-goto="stats" style="background:rgb(255 255 255/.16);color:inherit">حط ميزانية الشهر ←</button>';$('#hFootB').innerHTML='';}
   $('#hInc').innerHTML=amtHTML(d.income);$('#hExp').innerHTML=amtHTML(d.expense);
   if(UI.openAcc&&!accById(UI.openAcc))UI.openAcc=null;
   $('#walletHint').hidden=S.accounts.length<2;
@@ -1287,7 +1327,7 @@ function renderHome(d){
         ${a.type==='credit'||a.type==='debit'?'<svg class="wnfc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>':'<span></span>'}</div>
       <div><div class="wbot"><div class="wleft"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.balance!=null?`<small>${a.type==='credit'?'المتاح':'الرصيد'} · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>${netOf(a)==='none'&&a.type!=='cash'?`<button type="button" class="addnet" data-netpick="${a.id}">+ فيزا / ماستر</button>`:netLogo(a)}</div>
       ${a.type==='credit'&&lim?(()=>{const used=a.balance!=null?Math.max(0,lim-a.balance):spent;return`<div class="wlim"><i style="width:${Math.min(100,used/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>مستخدم ${fmt(used)} من ${fmt(lim)}</span><span>${pct(used/lim*100)}</span></div>`})():''}</div>
-    </div>`}).join(''):`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
+    </div>`}).join('')+`<div class="wnotch"><button type="button" class="addcardbtn" data-addcard><span class="pl">+</span>ضيف كارت</button></div>`:`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
   const up=[...S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).map(s=>({d:s.next,h:subItem(s,false)})),...S.planned.filter(p=>!p.done&&p.due&&daysUntil(p.due)<=10).map(p=>({d:p.due,h:plnItem(p,false)}))].sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
   $('#homeSubsWrap').hidden=!up.length;
   $('#homeSubs').innerHTML=up.map(x=>x.h).join('');
@@ -2229,6 +2269,7 @@ document.querySelectorAll('.sheet').forEach(s=>{const b=s.querySelector('.body')
 
 /* ---------- app colour ---------- */
 const THEMES={
+  neon:   {n:'نيون',  b:'#7EE36A',bd:'#7EE36A',inkD:'#9BF58A',s:'#C9FBB8',sd:'#B8F7A8',full:true},
   wine:   {n:'خمري',   b:'#761A36',bd:'#6E1832',inkD:'#EC9DB2',s:'#F6D3C4',sd:'#F0C6B7'},
   navy:   {n:'كحلي',   b:'#1F3A68',bd:'#1E3760',inkD:'#9DB8EC',s:'#CFDDF5',sd:'#B9CDEE'},
   emerald:{n:'زمردي',  b:'#0F5E4A',bd:'#0E5644',inkD:'#7FD1B2',s:'#C9EBDA',sd:'#B3E1CB'},
@@ -2237,7 +2278,7 @@ const THEMES={
   coffee: {n:'قهوة',   b:'#5B3A29',bd:'#553626',inkD:'#E0B897',s:'#F1DCC8',sd:'#E6CBB3'},
   black:  {n:'أسود',   b:'#1F1F23',bd:'#2A2A30',inkD:'#E5E5EA',s:'#E4E0DA',sd:'#D6D1CA'}
 };
-function applyTheme(k){const t=THEMES[k]||THEMES.wine;let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
+function applyTheme(k){const t=THEMES[k]||THEMES.wine;document.documentElement.classList.toggle('t-neon',k==='neon');let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
   const dark=`--brand:${t.bd};--brand-ink:${t.inkD};--lime:${t.sd};--k-wine:${t.bd}`;
   st.textContent=`:root{--brand:${t.b};--brand-ink:${t.b};--lime:${t.s};--k-wine:${t.b}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t.b);}
@@ -2276,11 +2317,13 @@ function addHeadIcons(){document.querySelectorAll('details.fold>summary h2:not([
 addHeadIcons();
 ['pnIcons','dbIcons','svIcons'].forEach(id=>renderIconPicker(id,''));
 
+document.addEventListener('click',e=>{if(!e.target.closest('[data-addcard]'))return;e.stopPropagation();const d=$('#accAdd');resetAccForm();UI.returnY=window.scrollY;d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('#aBank').focus({preventScroll:true}),400)},true);
+
 /* ---------- boot ---------- */
 localStore.load();
 (function migrateMonthly(){const ps=S.pots.filter(p=>+p.monthly>0);if(!ps.length)return;let sum=0;ps.forEach(p=>{for(let k=1;k<=monthsSince(p.startDate);k++)S.savings.push({id:rid(),potId:p.id,amount:+p.monthly,kind:"in",date:addMonths(p.startDate,k),note:"التحويش الشهري",ts:Date.now()});sum+=+p.monthly;p.monthly=0;p.startDate=todayISO()});if(!S.settings.planMonthly)S.settings.planMonthly=sum;localStore.persist()})();
 (function migrateSavings(){const old=S.savings.filter(s=>!s.potId);if(!old.length)return;const id=rid();const first=old.map(s=>s.date).sort()[0]||todayISO();S.pots.push({id,where:"other",source:"other",start:0,startDate:todayISO(),firstDate:first,monthly:0,note:"تحويشك القديم",ts:Date.now()});old.forEach(s=>s.potId=id);localStore.persist()})();
-try{const t=localStorage.getItem(LS+'.tab');if(t&&TITLES[t])setTab(t)}catch(e){}
+{let t='home';try{const s=localStorage.getItem(LS+'.tab');if(s&&TITLES[s])t=s}catch(e){}setTab(t)}
 renderSwatches();renderCatGrid();render();
 setTimeout(()=>autoPostPlanned(),600);
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
