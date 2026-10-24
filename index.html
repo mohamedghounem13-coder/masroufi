@@ -216,6 +216,14 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 .pocket .pk-add{bottom:14px;left:14px;padding:4px 11px 4px 4px!important;font-size:.72rem!important;gap:7px}
 .pocket .pk-add .pl{width:22px!important;height:22px!important;font-size:1rem}
 .pocket .pouch .pv[data-priv]:not(.shown){margin-bottom:22px}
+/* brown leather wallet: grain texture, cream stitching on the back and the front pocket */
+:root .pocket,:root.t-neon .pocket{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),radial-gradient(90% 70% at 50% 0%,rgb(255 220 180/.12),transparent 70%),linear-gradient(180deg,#5C3B25,#3B2415);box-shadow:inset 0 1px 0 rgb(255 230 200/.18),inset 0 -6px 14px rgb(0 0 0/.35),0 16px 36px rgb(0 0 0/.5)}
+.pocket::after{content:"";position:absolute;inset:7px;border:1.4px dashed rgb(232 200 160/.45);border-radius:28px;pointer-events:none;z-index:0}
+:root .pocket::before,:root.t-neon .pocket::before{color:rgb(240 215 185/.55);z-index:1}
+:root .pocket .pouch,:root.t-neon .pocket .pouch{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),radial-gradient(80% 70% at 15% 0%,rgb(255 225 190/.16),transparent 70%),linear-gradient(180deg,#7A5034,#4E311E);color:#FBEFE2;box-shadow:0 -8px 18px rgb(0 0 0/.45),inset 0 2px 0 rgb(255 225 190/.25),inset 0 -14px 22px rgb(0 0 0/.35),inset 12px 0 16px rgb(255 225 190/.05),inset -12px 0 16px rgb(0 0 0/.18)}
+:root .pocket .pouch::before,:root.t-neon .pocket .pouch::before{border:1.6px dashed rgb(240 210 170/.6)}
+:root .pocket .pouch .pt,:root.t-neon .pocket .pouch .pt{color:#F0D9BF;opacity:.85}
+.pocket .pouch .pv{min-width:170px;text-align:center}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
