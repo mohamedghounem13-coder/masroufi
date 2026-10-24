@@ -199,6 +199,18 @@ input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-an
 .fields>*{min-width:0}
 .sheet .body{overflow-x:hidden;touch-action:pan-y;overscroll-behavior-x:none}
 .sheet .body .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+/* real wallet look: back panel with frame + label, cards tucked inside, stitched front pocket */
+.pocket{height:calc(var(--ph) + 300px);border-radius:36px;background:linear-gradient(180deg,#2B2C30,#1B1C1F);box-shadow:inset 0 0 0 7px rgb(255 255 255/.07),inset 0 2px 0 7px rgb(255 255 255/.04),0 14px 34px rgb(0 0 0/.4);overflow:hidden}
+.pocket::before{content:"محفظتي";position:absolute;top:16px;left:0;right:0;text-align:center;font-family:var(--display);font-weight:700;font-size:1.05rem;color:rgb(255 255 255/.32);letter-spacing:0}
+.pocket .peek{left:9%;right:9%;height:126px;border-radius:16px;border:2px solid rgb(255 255 255/.85);box-shadow:0 -3px 12px rgb(0 0 0/.25)}
+.pocket .pouch{left:12px;right:12px;bottom:12px;height:178px;border-radius:28px;
+  background:radial-gradient(90% 110% at 90% 115%,color-mix(in srgb,var(--brand) 55%,transparent),transparent 62%),radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.07),transparent 70%),linear-gradient(180deg,#2A2C30,#141518);
+  box-shadow:0 -10px 22px rgb(0 0 0/.45),inset 0 1px 0 rgb(255 255 255/.16),inset 0 -14px 26px rgb(0 0 0/.45),inset 10px 0 16px rgb(255 255 255/.03)}
+.pocket .pouch::before{inset:10px;border:1.6px dashed rgb(255 255 255/.26);border-radius:20px}
+.pocket .pouch .pt{font-size:.85rem;opacity:.6}
+.pocket .pouch .pv{font-size:2rem}
+:root.t-neon .pocket .pouch{background:radial-gradient(90% 110% at 90% 115%,rgb(126 227 106/.55),transparent 62%),radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.07),transparent 70%),linear-gradient(180deg,#22272A,#121514)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]):not(.t-neon) .pocket{background:linear-gradient(180deg,#E9E8E5,#D9D7D2);box-shadow:inset 0 0 0 7px rgb(255 255 255/.6),0 14px 30px rgb(0 0 0/.12)}:root:not([data-theme="dark"]):not(.t-neon) .pocket::before{color:rgb(0 0 0/.3)}:root:not([data-theme="dark"]):not(.t-neon) .pocket .pouch{background:radial-gradient(60% 60% at 10% 0%,rgb(255 255 255/.7),transparent 70%),linear-gradient(180deg,#F1F0ED,#DEDCD7);box-shadow:0 -10px 20px rgb(0 0 0/.12),inset 0 1px 0 #fff,inset 0 -10px 18px rgb(0 0 0/.06)}}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
@@ -2371,7 +2383,7 @@ function pocketHTML(d){
   const own=acc.filter(a=>a.type!=='credit'&&a.balance!=null),hasBal=own.length>0;
   const total=hasBal?own.reduce((s,a)=>s+(+a.balance||0),0):sum(d.exp.filter(t=>accById(t.accountId)));
   const peeks=show.map((a,i)=>{const dom=bankDomain(a.bank),rot=[-4,3,-2,2][i%4]*(n>1?1:0);
-    return`<div class="peek" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${cardLook(a)};top:${8+i*40}px;transform:rotate(${rot}deg);z-index:${i+1}">
+    return`<div class="peek" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${cardLook(a)};top:${52+i*40}px;transform:rotate(${rot*0.4}deg);z-index:${i+1}">
       <span class="pk-bank">${dom?`<span class="blogo"><img class="sl" src="${favURL(dom,64)}" alt=""></span>`:''}${esc(a.bank)}</span><span class="pk-net">${netOf(a)==='none'?'':netLogo(a)}</span></div>`}).join('');
   return`<div class="pocket" data-pocket role="button" tabindex="0" aria-label="افتح المحفظة" style="--ph:${Math.max(0,n-1)*40}px">${peeks}
     <div class="pouch"><span class="pt">${hasBal?'إجمالي رصيدك':'صرفت الشهر ده من كروتك'}</span><b class="pv" data-priv="wallet">${bigMoney(total)}</b>
