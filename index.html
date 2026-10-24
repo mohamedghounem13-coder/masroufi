@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>مصروفي</title>
-<meta name="theme-color" content="#761A36">
+<meta name="theme-color" content="#050A06">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -32,7 +32,7 @@ img{max-width:100%}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=Lalezar&family=Kufam:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700;800&family=Lalezar&family=Aref+Ruqaa:wght@400;700&family=Kufam:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: phone-width app column, deep-green hero cards with lime meters, white rounded cards, icon circles tinted by category, fixed bottom nav */
 :root{
@@ -93,7 +93,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .pinfo b{font-family:var(--display);font-size:1.05rem}
 #moreSheet .backup{justify-content:flex-start}
 #moreSheet .store{text-align:start;margin:0}
-.fontpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fontpick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .fontpick button,.pinrow button{appearance:none;border:0;background:var(--soft);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--fg);font:inherit;font-size:.78rem}
 .fontpick button b{font-size:1.05rem;font-weight:700}
 .fontpick button[aria-pressed="true"],.pinrow button[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--brand-ink);background:color-mix(in srgb,var(--lime) 18%,var(--soft))}
@@ -152,11 +152,53 @@ details.add>summary .hic{order:-1}
 .wnotch::after{left:-26px;bottom:0}
 .addcardbtn{appearance:none;border:0;display:flex;align-items:center;gap:10px;background:var(--fg);color:var(--bg);font:inherit;font-weight:600;font-size:.9rem;padding:7px 16px 7px 7px;border-radius:999px;cursor:pointer;direction:rtl}
 .addcardbtn .pl{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bg);color:var(--fg);font-size:1.2rem;line-height:1}
-.wallet .wcard:nth-last-child(2) .wbot>.nlogo,.wallet .wcard:nth-last-child(2) .wbot>.nvisa,.wallet .wcard:nth-last-child(2) .wbot>.namex,.wallet .wcard:nth-last-child(2) .wbot>.addnet{position:absolute;top:16px;right:20px;z-index:2}
+.wallet .wcard:nth-last-child(2) .wbot>.nlogo,.wallet .wcard:nth-last-child(2) .wbot>.nvisa,.wallet .wcard:nth-last-child(2) .wbot>.namex,.wallet .wcard:nth-last-child(2) .wbot>.addnet{position:absolute;top:-78px;right:0;z-index:2}
+.wallet .wcard:nth-last-child(2) .wnfc{visibility:hidden}
 .wallet .wcard:nth-last-child(2) .wtop .net{visibility:hidden}
 :root.t-neon .wnotch,:root.t-neon .wnotch::before,:root.t-neon .wnotch::after{--surface:#0B130D}
 :root.t-neon .addcardbtn{background:var(--brand);color:var(--on-brand)}
 :root.t-neon .addcardbtn .pl{background:var(--on-brand);color:var(--brand)}
+/* Ruqaa: titles and labels in Ruqaa, numbers and small text stay in a clear face */
+:root.f-ruqaa{--display:"Aref Ruqaa","Alexandria",serif}
+:root.f-ruqaa h1,:root.f-ruqaa h2,:root.f-ruqaa h3,:root.f-ruqaa .page,:root.f-ruqaa .hero .lbl,:root.f-ruqaa .item .what b,:root.f-ruqaa .mini .t,:root.f-ruqaa details.add>summary,:root.f-ruqaa .wtop .bk,:root.f-ruqaa .tgo{font-family:"Aref Ruqaa","Alexandria",serif;font-weight:700}
+:root.f-ruqaa .top h1{font-size:2.2rem}
+:root.f-ruqaa .hero .big,:root.f-ruqaa .amt,:root.f-ruqaa .mini .v,:root.f-ruqaa .wbot .sp b,:root.f-ruqaa .num{font-family:"Alexandria","IBM Plex Sans Arabic",sans-serif}
+:root.f-ruqaa .item .what b{font-size:1.06rem;line-height:1.6}
+:root.f-ruqaa .hero .lbl{font-size:1.15rem}
+/* wallet pocket */
+.pocket{position:relative;height:calc(var(--ph) + 235px);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.peek{position:absolute;left:5%;right:5%;height:118px;border-radius:18px;padding:14px 18px;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--ac) 88%,#fff),var(--ac) 45%,color-mix(in srgb,var(--ac) 58%,#000));box-shadow:0 -2px 10px rgb(0 0 0/.15),inset 0 1px 0 rgb(255 255 255/.25);display:flex;justify-content:space-between;align-items:flex-start;direction:ltr;transition:transform .45s cubic-bezier(.32,.72,0,1),opacity .3s}
+.pk-bank{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:.95rem;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.pk-net .nlogo{height:24px}.pk-net .nvisa{font-size:1.15rem}
+.pouch{position:absolute;left:0;right:0;bottom:0;height:172px;z-index:20;border-radius:26px;padding:20px 18px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;
+  background:radial-gradient(120% 90% at 85% 120%,color-mix(in srgb,var(--brand) 30%,transparent),transparent 60%),linear-gradient(180deg,#24262A,#141518);color:#fff;
+  box-shadow:0 -6px 18px rgb(0 0 0/.35),inset 0 1px 0 rgb(255 255 255/.12),inset 0 -8px 20px rgb(0 0 0/.35)}
+.pouch::before{content:"";position:absolute;inset:9px;border:1.5px dashed rgb(255 255 255/.22);border-radius:19px;pointer-events:none}
+.pouch .pt{font-size:.82rem;opacity:.7}
+.pouch .pv{font-family:var(--display);font-size:1.9rem;font-weight:700;line-height:1.2}
+.pouch .pv small{font-size:.5em;opacity:.7;margin-inline-start:4px}
+.pouch .ps{font-size:.72rem;opacity:.55}
+.pk-add{position:absolute;bottom:14px;left:14px;padding:5px 12px 5px 5px!important;font-size:.78rem!important}
+.pk-add .pl{width:26px!important;height:26px!important}
+.pouch .ps{margin-bottom:40px}
+.pocket.opening .peek{transform:translateY(-34px)!important;opacity:.0}
+.pocket.opening .pouch{transform:translateY(16px);opacity:0;transition:transform .3s,opacity .3s}
+.pocket.closing .peek{animation:peekIn .45s cubic-bezier(.32,.72,0,1) both}
+@keyframes peekIn{from{transform:translateY(-40px);opacity:0}}
+.wcard.slidein{animation:cardOut .5s cubic-bezier(.32,.72,0,1) both}
+@keyframes cardOut{from{transform:translateY(70px) scale(.96);opacity:0}}
+.pocketback{appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-size:.8rem;cursor:pointer;align-self:center;padding:2px 10px 8px;display:block;margin:0 auto}
+.wallet.closed{display:block}
+:root[data-theme="light"] .pouch{background:radial-gradient(120% 90% at 85% 120%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 60%),linear-gradient(180deg,#F3F2EF,#DCDAD5);color:#1b1b1d}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]):not(.t-neon) .pouch{background:radial-gradient(120% 90% at 85% 120%,color-mix(in srgb,var(--brand) 22%,transparent),transparent 60%),linear-gradient(180deg,#F3F2EF,#DCDAD5);color:#1b1b1d}:root:not([data-theme="dark"]):not(.t-neon) .pouch::before{border-color:rgb(0 0 0/.18)}}
+@media (prefers-reduced-motion:reduce){.wcard.slidein,.pocket.closing .peek{animation:none}}
+/* stop sideways sliding: iPhone date/month inputs refuse to shrink, so force them to fit; sheets only scroll up/down */
+html,body{overflow-x:hidden;max-width:100%}
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-width:0;max-width:100%;width:100%;display:block;text-align:right;min-height:44px}
+input[type=date]::-webkit-date-and-time-value,input[type=month]::-webkit-date-and-time-value{text-align:right}
+.fields>*{min-width:0}
+.sheet .body{overflow-x:hidden;touch-action:pan-y;overscroll-behavior-x:none}
+.sheet .body .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{position:relative;background:var(--surface);border-radius:18px}
 .tile.cur{box-shadow:inset 0 0 0 2px var(--brand-ink)}
@@ -1328,6 +1370,10 @@ function renderHome(d){
       <div><div class="wbot"><div class="wleft"><span class="pan">${a.last4?'•••• '+esc(a.last4):esc(ACC_TYPE[a.type]||'')}</span><span class="sp">${a.balance!=null?`<small>${a.type==='credit'?'المتاح':'الرصيد'} · صرف الشهر ${fmt(spent)}</small><b>${fmt(a.balance)}</b>`:a.type==='credit'&&lim?`<small>المتاح ${fmt(Math.max(0,lim-spent))}</small><b>${fmt(spent)}</b>`:`<small>صرف ${monthName(curMonth)}</small><b>${fmt(spent)}</b>`} <span style="font-size:.75rem;opacity:.85">ر.س</span></span></div>${netOf(a)==='none'&&a.type!=='cash'?`<button type="button" class="addnet" data-netpick="${a.id}">+ فيزا / ماستر</button>`:netLogo(a)}</div>
       ${a.type==='credit'&&lim?(()=>{const used=a.balance!=null?Math.max(0,lim-a.balance):spent;return`<div class="wlim"><i style="width:${Math.min(100,used/lim*100).toFixed(1)}%"></i></div><div class="row between" style="font-size:.7rem;opacity:.85;margin-top:3px"><span>مستخدم ${fmt(used)} من ${fmt(lim)}</span><span>${pct(used/lim*100)}</span></div>`})():''}</div>
     </div>`}).join('')+`<div class="wnotch"><button type="button" class="addcardbtn" data-addcard><span class="pl">+</span>ضيف كارت</button></div>`:`<div class="empty">ضيف كروتك (كريديت الأهلي، مدى الراجحي...) عشان تعرف صرفت قد إيه من كل واحد.</div>`;
+  // wallet pocket: cards peek out of a pouch showing the total; tap to slide the cards out
+  if(S.accounts.length&&!UI.walletOpen)$('#homeAccts').innerHTML=pocketHTML(d);
+  else if(S.accounts.length)$('#homeAccts').insertAdjacentHTML('afterbegin','<button type="button" class="pocketback" data-pocketclose>⌄ رجّع الكروت للجيب</button>');
+  $('#homeAccts').classList.toggle('closed',!!S.accounts.length&&!UI.walletOpen);$('#walletHint').hidden=!UI.walletOpen||S.accounts.length<2;
   const up=[...S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).map(s=>({d:s.next,h:subItem(s,false)})),...S.planned.filter(p=>!p.done&&p.due&&daysUntil(p.due)<=10).map(p=>({d:p.due,h:plnItem(p,false)}))].sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
   $('#homeSubsWrap').hidden=!up.length;
   $('#homeSubs').innerHTML=up.map(x=>x.h).join('');
@@ -2162,7 +2208,7 @@ $('#bkImport').onchange=async e=>{
 })();
 
 /* ---------- font ---------- */
-const FONTS={alexandria:['الأصلي','"Alexandria","IBM Plex Sans Arabic",sans-serif'],lalezar:['لاله‌زار','"Lalezar",sans-serif'],kufam:['كوفام (حاد)','"Kufam",sans-serif']};
+const FONTS={alexandria:['الأصلي','"Alexandria","IBM Plex Sans Arabic",sans-serif'],lalezar:['لاله‌زار','"Lalezar",sans-serif'],kufam:['كوفام (حاد)','"Kufam",sans-serif'],ruqaa:['رقعة','"Aref Ruqaa",serif']};
 function getFont(){try{const v=localStorage.getItem(LS+'.font');return FONTS[v]?v:'alexandria'}catch(e){return'alexandria'}}
 function setFont(v){Object.keys(FONTS).forEach(f=>document.documentElement.classList.toggle('f-'+f,f===v&&f!=='alexandria'));try{localStorage.setItem(LS+'.font',v)}catch(e){}renderFonts()}
 function renderFonts(){const cur=getFont();$('#fontRow').innerHTML=Object.entries(FONTS).map(([k,[n,ff]])=>`<button type="button" data-font-pick="${k}" aria-pressed="${k===cur}"><b style="font-family:${ff.replace(/"/g,"'")}">مصروفي 1,250</b><span>${n}</span></button>`).join('')}
@@ -2282,7 +2328,7 @@ function applyTheme(k){const t=THEMES[k]||THEMES.wine;document.documentElement.c
   const dark=`--brand:${t.bd};--brand-ink:${t.inkD};--lime:${t.sd};--k-wine:${t.bd}`;
   st.textContent=`:root{--brand:${t.b};--brand-ink:${t.b};--lime:${t.s};--k-wine:${t.b}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
   const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t.b);}
-function getTheme(){try{return localStorage.getItem(LS+'.theme')||'wine'}catch(e){return'wine'}}
+function getTheme(){try{if(!localStorage.getItem(LS+'.neonV')){localStorage.setItem(LS+'.neonV','1');localStorage.setItem(LS+'.theme','neon')}return localStorage.getItem(LS+'.theme')||'neon'}catch(e){return'neon'}}
 function renderThemes(){const cur=getTheme();$('#themeRow').innerHTML=Object.entries(THEMES).map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${k===cur}" aria-label="${t.n}"><i style="background:${t.b}"></i><span>${t.n}</span></button>`).join('')}
 $('#themeRow').addEventListener('click',e=>{const b=e.target.closest('[data-theme-pick]');if(!b)return;try{localStorage.setItem(LS+'.theme',b.dataset.themePick)}catch(err){}applyTheme(b.dataset.themePick);renderThemes();render()});
 applyTheme(getTheme());renderThemes();
@@ -2318,6 +2364,23 @@ addHeadIcons();
 ['pnIcons','dbIcons','svIcons'].forEach(id=>renderIconPicker(id,''));
 
 document.addEventListener('click',e=>{if(!e.target.closest('[data-addcard]'))return;e.stopPropagation();const d=$('#accAdd');resetAccForm();UI.returnY=window.scrollY;d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('#aBank').focus({preventScroll:true}),400)},true);
+
+/* ---------- wallet pocket ---------- */
+function pocketHTML(d){
+  const acc=S.accounts,show=acc.slice(-4),n=show.length;
+  const own=acc.filter(a=>a.type!=='credit'&&a.balance!=null),hasBal=own.length>0;
+  const total=hasBal?own.reduce((s,a)=>s+(+a.balance||0),0):sum(d.exp.filter(t=>accById(t.accountId)));
+  const peeks=show.map((a,i)=>{const dom=bankDomain(a.bank),rot=[-4,3,-2,2][i%4]*(n>1?1:0);
+    return`<div class="peek" style="--ac:var(--${a.color&&a.color!=='bank'?a.color:'k-wine'});${cardLook(a)};top:${8+i*40}px;transform:rotate(${rot}deg);z-index:${i+1}">
+      <span class="pk-bank">${dom?`<span class="blogo"><img class="sl" src="${favURL(dom,64)}" alt=""></span>`:''}${esc(a.bank)}</span><span class="pk-net">${netOf(a)==='none'?'':netLogo(a)}</span></div>`}).join('');
+  return`<div class="pocket" data-pocket role="button" tabindex="0" aria-label="افتح المحفظة" style="--ph:${Math.max(0,n-1)*40}px">${peeks}
+    <div class="pouch"><span class="pt">${hasBal?'إجمالي رصيدك':'صرفت الشهر ده من كروتك'}</span><b class="pv" data-priv="wallet">${bigMoney(total)}</b>
+      <span class="ps">${acc.length} ${acc.length>=3&&acc.length<=10?'كروت':'كارت'} · دوس عشان تشوفهم</span>
+      <button type="button" class="addcardbtn pk-add" data-addcard><span class="pl">+</span>ضيف كارت</button></div></div>`}
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-addcard]'))return;
+  const p=e.target.closest('[data-pocket]');if(p&&!e.target.closest('[data-priv]:not(.shown)')){p.classList.add('opening');setTimeout(()=>{UI.walletOpen=true;render();document.querySelectorAll('#homeAccts .wcard').forEach((c,i)=>{c.style.animationDelay=i*60+'ms';c.classList.add('slidein')})},260);return}
+  if(e.target.closest('[data-pocketclose]')){UI.walletOpen=false;UI.openAcc=null;render();const pk=document.querySelector('#homeAccts .pocket');if(pk)pk.classList.add('closing')}});
 
 /* ---------- boot ---------- */
 localStore.load();
