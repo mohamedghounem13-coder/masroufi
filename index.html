@@ -541,12 +541,16 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .mswitch button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .slbar{display:flex;height:18px;border-radius:9px;overflow:hidden;background:var(--soft)}
 .slbar i{display:block;height:100%}
-.slrow{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.slrow{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .slrow:last-child{border-bottom:0}
 .slrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .slrow .nm span{display:block;font-size:.75rem;color:var(--muted)}
 .slrow .amt{font-weight:700}
 .dot{width:12px;height:12px;border-radius:50%}
+.slpaid{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:none;color:transparent;font-weight:800;cursor:pointer}
+.slpaid[aria-pressed="true"]{background:var(--good,#2E9E5B);border-color:var(--good,#2E9E5B);color:#06210C}
+.slrow.paid .nm,.slrow.paid .amt{opacity:.55}
+#slWhere .slrow{grid-template-columns:12px minmax(0,1fr) auto auto}
 .slm{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .slm:last-child{border-bottom:0}
 .slm .mb{height:8px;border-radius:4px;background:var(--soft);overflow:hidden}
@@ -969,13 +973,14 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="slbar" id="slBar"></div>
       <div id="slItems"></div>
       <button type="button" class="btn" id="slCopy" hidden></button>
+      <button type="button" class="btn" id="slTpl" hidden>ابدأ بتقسيمتي (مرتب 13,000 و10 بنود)</button>
       <form id="slItemForm" class="fields">
         <label>البند<input id="slName" required list="slNames" placeholder="إيجار، تحويل لمصر، تحويش..."></label>
         <label>المبلغ<input id="slItemAmt" type="number" min="0" step="any" inputmode="decimal" required></label>
         <button class="btn primary" id="slItemBtn">ضيف البند</button>
       </form>
       <button type="button" class="btn link small" id="slItemCancel" hidden>إلغاء التعديل</button>
-      <datalist id="slNames"><option>الإيجار</option><option>تحويل لمصر</option><option>التحويش</option><option>أقساط</option><option>الكريديت كارد</option><option>فواتير</option><option>مقاضي البيت</option><option>أكل وشرب</option><option>مواصلات وبنزين</option><option>اشتراكات</option><option>مصروف شخصي</option><option>هدايا</option></datalist>
+      <datalist id="slNames"><option>قسط الشقة</option><option>مصروف البيت</option><option>البنزين</option><option>فاتورة الجوال 1</option><option>فاتورة الجوال 2</option><option>قسط البيت</option><option>قسط العربية</option><option>النت</option><option>فاتورة هنار</option><option>الكهرباء</option><option>الإيجار</option><option>تحويل لمصر</option><option>التحويش</option><option>أقساط</option><option>الكريديت كارد</option><option>فواتير</option><option>مقاضي البيت</option><option>أكل وشرب</option><option>مواصلات وبنزين</option><option>اشتراكات</option><option>مصروف شخصي</option><option>هدايا</option></datalist>
     </div>
     <div class="card">
       <h2>المرتب خلال السنة</h2>
@@ -2530,10 +2535,11 @@ function renderSalary(){if(!UI.slM)return;
   const base=Math.max(sal,out)||1,rows=items.slice().sort((a,b)=>b.amount-a.amount);
   $('#slBar').innerHTML=rows.map(i=>`<i style="width:${(i.amount/base*100).toFixed(2)}%;background:${slColor(i.name)}"></i>`).join('');
   $('#slBar').hidden=!rows.length;
-  $('#slItems').innerHTML=rows.length?rows.map(i=>`<div class="slrow" data-sledit="${i.id}"><span class="dot" style="background:${slColor(i.name)}"></span><div class="nm">${esc(i.name)}${sal?`<span>${pct(i.amount/sal*100)} من المرتب</span>`:''}</div><span class="amt">${amtHTML(i.amount)}</span><button type="button" class="btn x" data-sldel="${i.id}" aria-label="امسح">✕</button></div>`).join('')+(rows.length>1?`<div class="slfoot"><span>الإجمالي</span><span>${amtHTML(out)}</span></div>`:''):emptyBox('ضيف كل حاجة بتطلع من المرتب: الإيجار، التحويل لمصر، التحويش...');
+  $('#slItems').innerHTML=rows.length?rows.map(i=>`<div class="slrow${i.paid?' paid':''}" data-sledit="${i.id}"><span class="dot" style="background:${slColor(i.name)}"></span><div class="nm">${esc(i.name)}${sal?`<span>${pct(i.amount/sal*100)} من المرتب</span>`:''}</div><span class="amt">${amtHTML(i.amount)}</span><button type="button" class="slpaid" data-slpaid="${i.id}" aria-pressed="${!!i.paid}" aria-label="${i.paid?'اتدفع':'علّمه إنه اتدفع'}">✓</button><button type="button" class="btn x" data-sldel="${i.id}" aria-label="امسح">✕</button></div>`).join('')+(rows.length>1?`<div class="slfoot"><span>الإجمالي</span><span>${amtHTML(out)}</span></div>`:'')+(rows.some(i=>i.paid)?`<div class="row between muted small"><span>اتدفع ${fmt(sum(rows.filter(i=>i.paid)))}</span><span>لسه ${fmt(sum(rows.filter(i=>!i.paid)))}</span></div>`:''):emptyBox('ضيف كل حاجة بتطلع من المرتب: الإيجار، التحويل لمصر، التحويش...');
   // copy last month's items to start fast
   const pm=shiftMonth(m,-1),px=slOf(pm),cp=$('#slCopy');
   cp.hidden=!!items.length||!px||!(px.items||[]).length;if(!cp.hidden)cp.textContent=`انسخ بنود ${monthName(pm)}`;
+  $('#slTpl').hidden=!!items.length||!cp.hidden;
   // year view
   const y=UI.slY;$('#slYearLbl').textContent=y;
   const ms=Array.from({length:12},(_,k)=>y+'-'+pad(k+1)).filter(k=>slOf(k));
@@ -2550,12 +2556,16 @@ $('#slItemForm').onsubmit=e=>{e.preventDefault();const name=$('#slName').value.t
   if(UI.slEdit){const i=items.findIndex(t=>t.id===UI.slEdit);if(i>=0)items[i]={...items[i],name,amount}}else items.push({id:rid(),name,amount});
   const ed=!!UI.slEdit;slResetItem();act(slSave(UI.slM,{items}),ed?'اتحفظ التعديل':'اتضاف البند')};
 $('#slItemCancel').onclick=slResetItem;
+// the split the user sent (their spreadsheet), to start a month in one tap
+const SL_TPL=[['قسط الشقة',700],['مصروف البيت',3500],['البنزين',250],['فاتورة الجوال 1',170],['فاتورة الجوال 2',100],['قسط البيت',1250],['قسط العربية',2400],['النت',287],['فاتورة هنار',75],['الكهرباء',175]];
+$('#slTpl').onclick=()=>{const x=slOf(UI.slM);act(slSave(UI.slM,{items:SL_TPL.map(([name,amount])=>({id:rid(),name,amount})),...(!(x&&+x.amount)?{amount:13000}:{})}),'اتضافت تقسيمتك. عدّل اللي اتغير')};
 $('#slCopy').onclick=()=>{const px=slOf(shiftMonth(UI.slM,-1));if(!px)return;const x=slOf(UI.slM);
-  act(slSave(UI.slM,{items:(px.items||[]).map(i=>({...i,id:rid()})),...(!(x&&+x.amount)?{amount:+px.amount||0}:{})}),'اتنسخت البنود. عدّل اللي اتغير')};
+  act(slSave(UI.slM,{items:(px.items||[]).map(i=>({...i,id:rid(),paid:false})),...(!(x&&+x.amount)?{amount:+px.amount||0}:{})}),'اتنسخت البنود. عدّل اللي اتغير')};
 $('#p-salary').addEventListener('click',e=>{
   const mv=e.target.closest('[data-slm]');if(mv){UI.slM=shiftMonth(UI.slM,+mv.dataset.slm);UI.slY=+UI.slM.slice(0,4);slResetItem();renderSalary();return}
   const yv=e.target.closest('[data-sly]');if(yv){UI.slY+=+yv.dataset.sly;renderSalary();return}
   const g=e.target.closest('[data-slgo]');if(g){UI.slM=g.dataset.slgo;slResetItem();renderSalary();window.scrollTo({top:0,behavior:'smooth'});return}
+  const pd=e.target.closest('[data-slpaid]');if(pd){const x=slOf(UI.slM);if(!x)return;act(slSave(UI.slM,{items:x.items.map(i=>i.id===pd.dataset.slpaid?{...i,paid:!i.paid}:i)}));return}
   const dl=e.target.closest('[data-sldel]');if(dl){const x=slOf(UI.slM);if(!x)return;act(slSave(UI.slM,{items:x.items.filter(i=>i.id!==dl.dataset.sldel)}),'اتمسح البند');return}
   const ed=e.target.closest('[data-sledit]');if(ed){const x=slOf(UI.slM),i=x&&x.items.find(t=>t.id===ed.dataset.sledit);if(!i)return;
     UI.slEdit=i.id;$('#slName').value=i.name;$('#slItemAmt').value=i.amount;$('#slItemBtn').textContent='احفظ التعديل';$('#slItemCancel').hidden=false;$('#slItemAmt').focus()}});
