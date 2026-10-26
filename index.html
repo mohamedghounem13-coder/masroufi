@@ -563,7 +563,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .slm.cur{background:color-mix(in srgb,var(--brand) 8%,transparent);border-radius:12px;padding-inline:8px}
 .slfoot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;font-weight:700}
 /* intro splash: moving neon colours + logo */
-.intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:#050A06;transition:opacity .5s,transform .5s;cursor:pointer}
+.intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:#050A06;border-radius:30px 30px 0 0;box-shadow:0 0 0 40px var(--n-bg,#050A06);transition:opacity .5s,transform .5s;cursor:pointer}
 .intro.out{opacity:0;transform:scale(1.08);pointer-events:none}
 .intro .blob{position:absolute;width:75vmax;height:75vmax;border-radius:50%;filter:blur(50px);opacity:.42;mix-blend-mode:screen}
 .intro .b1{background:var(--brand,#7BEA6B);top:-30vmax;left:-25vmax;animation:ib1 3.2s ease-in-out infinite alternate}
@@ -2108,7 +2108,9 @@ async function importClip(){let txt='';
   if(!txt.trim()){toast('الحافظة فاضية. مفيش رسايل جديدة.');return}
   const known=new Set(S.tx.map(t=>t.hash).filter(Boolean)),fresh=[];let dupe=0;
   splitSms(txt).forEach(c=>{const p=parseSms(c);if(!p)return;if(known.has(p.hash)){dupe++;return}known.add(p.hash);fresh.push(p)});
-  if(!fresh.length){toast(dupe?'الرسايل دي متسجلة قبل كده':'اللي في الحافظة مش رسايل بنك');return}
+  if(!fresh.length){if(dupe){toast('الرسايل دي متسجلة قبل كده');return}
+    // show what was in the clipboard so it's clear why nothing was read
+    showSmsView();$('#smsIn').value=txt;toast('ماعرفتش أقرا مبلغ من اللي في الحافظة. بص عليه تحت');return}
   let ok=0;for(const p of fresh){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
   toast(`اتسجّل ${ok===1?'حركة واحدة':ok===2?'حركتين':ok+' '+(ok<=10?'حركات':'حركة')} من رسايل البنك${dupe?` · ${dupe} متسجلين قبل كده`:''}`,'ok');
   // empty the clipboard so the Shortcut starts a fresh pile
