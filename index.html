@@ -562,9 +562,36 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .slm.over .mb i{background:var(--bad)}
 .slm.cur{background:color-mix(in srgb,var(--brand) 8%,transparent);border-radius:12px;padding-inline:8px}
 .slfoot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:10px;font-weight:700}
+/* intro splash: moving neon colours + logo */
+.intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:#050A06;transition:opacity .5s,transform .5s;cursor:pointer}
+.intro.out{opacity:0;transform:scale(1.08);pointer-events:none}
+.intro .blob{position:absolute;width:75vmax;height:75vmax;border-radius:50%;filter:blur(50px);opacity:.42;mix-blend-mode:screen}
+.intro .b1{background:var(--brand,#7BEA6B);top:-30vmax;left:-25vmax;animation:ib1 3.2s ease-in-out infinite alternate}
+.intro .b2{background:var(--n-hi,#C8F7C0);bottom:-35vmax;right:-30vmax;opacity:.22;animation:ib2 3.6s ease-in-out infinite alternate}
+.intro .b3{background:var(--n-lo,#0F3A12);top:20%;left:30%;width:55vmax;height:55vmax;animation:ib3 2.8s ease-in-out infinite alternate}
+.intro .ring{position:absolute;width:120vmax;height:120vmax;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgb(var(--ng,123 234 107)/.35),transparent 30%,transparent 50%,rgb(var(--ng,123 234 107)/.25),transparent 80%);animation:ispin 2.4s linear infinite;filter:blur(20px)}
+@keyframes ib1{to{transform:translate(30vmax,25vmax) scale(1.2)}}
+@keyframes ib2{to{transform:translate(-25vmax,-30vmax) scale(.85)}}
+@keyframes ib3{to{transform:translate(-30vmax,15vmax) scale(1.3)}}
+@keyframes ispin{to{transform:rotate(360deg)}}
+.intro .mid{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.intro img{width:104px;height:104px;border-radius:26px;box-shadow:0 0 0 1px rgb(255 255 255/.15),0 0 50px rgb(var(--ng,123 234 107)/.7);animation:ilogo .9s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes ilogo{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+.intro .nm{font-family:var(--display);font-size:2.6rem;font-weight:800;background:linear-gradient(90deg,#fff 0%,var(--brand,#7BEA6B) 30%,#fff 50%,var(--brand,#7BEA6B) 70%,#fff 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:itxt .7s .35s ease-out both,ishine 1.6s .4s linear infinite}
+@keyframes itxt{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@keyframes ishine{to{background-position:-200% 0}}
+.intro .tag{color:rgb(255 255 255/.7);font-size:.9rem;animation:itxt .6s .7s ease-out both}
+@media (prefers-reduced-motion:reduce){.intro *{animation-duration:.01s!important;animation-iteration-count:1!important}}
+.addrow{display:grid;grid-template-columns:auto 1fr;gap:10px}
+.smsclip{background:var(--surface);color:var(--brand-ink);box-shadow:inset 0 0 0 1.5px rgb(var(--ng,0 0 0)/.35)}
+.howto{background:var(--soft);border-radius:14px;padding:12px 14px}
+.howto summary{cursor:pointer;font-weight:600;color:var(--brand-ink)}
+.howto ol{margin:10px 0 6px;padding-inline-start:20px;display:flex;flex-direction:column;gap:8px;line-height:1.6}
+.howto ul{margin:6px 0 0;padding-inline-start:18px;display:flex;flex-direction:column;gap:5px}
 </style>
 </head>
 <body>
+<div class="intro" id="intro" aria-hidden="true"><i class="ring"></i><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><div class="mid"><img src="icons/icon-192.png?v=2" alt=""><b class="nm">مصروفي</b><span class="tag">فلوسك تحت عينك</span></div></div>
 
 <div class="app" dir="rtl" lang="ar">
   <header class="top">
@@ -630,7 +657,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 
     <div class="sect"><h2>آخر العمليات</h2><button class="btn link small" data-goto="tx">عرض الكل</button></div>
     <div class="list" id="homeRecent"></div>
-    <div class="sticky-add"><button class="btn primary big" data-open-sheet><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>إضافة مصروف</button></div>
+    <div class="sticky-add addrow"><button class="btn big smsclip" data-smsclip aria-label="سجّل رسايل البنك"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>رسايل البنك</button><button class="btn primary big" data-open-sheet><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>إضافة مصروف</button></div>
   </section>
 
   <!-- TX -->
@@ -652,6 +679,23 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
     <div id="smsView" class="panel" style="padding:0" hidden>
       <div class="card">
         <h2>الصق رسايل البنك</h2>
+        <button type="button" class="btn primary big" data-smsclip><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>سجّل الرسايل اللي في الحافظة</button>
+        <details class="howto"><summary>إزاي أخلّي الآيفون ينسخ رسايل البنك لوحده؟</summary>
+          <ol>
+            <li>افتح تطبيق <b>الاختصارات (Shortcuts)</b> ← تحت اختار <b>التشغيل التلقائي (Automation)</b> ← دوس <b>+</b>.</li>
+            <li>اختار <b>رسالة (Message)</b>.</li>
+            <li>في <b>الرسالة تحتوي على (Message Contains)</b> اكتب كلمة موجودة في كل رسايل البنك، زي <b>SAR</b>. سيب المرسل فاضي.</li>
+            <li>اختار <b>تشغيل فورًا (Run Immediately)</b>، وبعدين <b>التالي</b>.</li>
+            <li>اختار <b>اختصار فارغ جديد (New Blank Automation)</b> وضيف 3 حاجات بالترتيب:
+              <ul>
+                <li><b>الحصول على الحافظة (Get Clipboard)</b></li>
+                <li><b>نص (Text)</b>: حط فيه <b>الحافظة</b>، وبعدها Enter مرتين، وبعدها <b>إدخال الاختصار (Shortcut Input)</b>. لو سألك، اختار <b>المحتوى (Content)</b>.</li>
+                <li><b>نسخ إلى الحافظة (Copy to Clipboard)</b></li>
+              </ul></li>
+            <li>دوس <b>تم</b>. من هنا ورايح كل رسالة بنك هتتجمع في الحافظة لوحدها.</li>
+          </ol>
+          <p class="muted small">بعدها افتح مصروفي ودوس <b>«رسايل البنك»</b>، واختار <b>لصق (Paste)</b> لما الآيفون يسألك. كل الرسايل هتتسجل مرة واحدة، والرسالة اللي اتسجلت قبل كده مش بتتكرر. لو نسخت حاجة تانية قبل ما تفتح التطبيق، الرسايل اللي اتجمعت قبلها هتضيع من الحافظة، بس تقدر تلصقها بإيدك هنا.</p>
+        </details>
         <div class="tip"><b>إزاي؟</b> انسخ رسالة البنك (الراجحي، الأهلي، الرياض، STC Pay...) والصقها هنا، وسيب سطر فاضي بين كل رسالة والتانية. الصفحة مش بتقدر تقرا رسايل الموبايل لوحدها.</div>
         <textarea id="smsIn" placeholder="شراء عبر نقاط البيع&#10;مبلغ: SAR 45.50&#10;لدى: HUNGERSTATION&#10;في: 2026-10-21 14:30"></textarea>
         <div class="row">
@@ -862,7 +906,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
     </div>
     <div class="card">
       <h2>الأصوات</h2>
-      <label class="check"><input type="checkbox" id="sndOn" checked> صوت لما تفتح المحفظة وترجّع الكروت ولما تعمل ريفريش</label>
+      <label class="check"><input type="checkbox" id="sndOn" checked> صوت لما تفتح التطبيق، ولما تفتح المحفظة وترجّع الكروت، ولما تعمل ريفريش</label>
     </div>
     <div class="card">
       <h2>الشريط اللي تحت</h2>
@@ -971,19 +1015,18 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="meter"><i id="slMeter" style="width:0"></i></div>
       <div class="foot"><span id="slFootA"></span><span id="slFootB"></span></div>
     </div>
-    <form class="card" id="slForm"><div class="fields"><label>مرتب الشهر ده<input id="slAmt" type="number" min="0" step="any" inputmode="decimal" placeholder="مثلاً 12000"></label><button class="btn primary">احفظ المرتب</button></div></form>
+    <form class="card" id="slForm"><div class="fields"><label>مرتب الشهر ده<input id="slAmt" type="number" min="0" step="any" inputmode="decimal" placeholder="اكتب مرتبك"></label><button class="btn primary">احفظ المرتب</button></div><button type="button" class="btn small" id="slReset" hidden>امسح الشهر ده وابدأ من الأول</button></form>
     <div class="card">
       <h2>بيروح فين</h2>
       <div class="slbar" id="slBar"></div>
       <div id="slItems"></div>
       <button type="button" class="btn" id="slCopy" hidden></button>
-      <button type="button" class="btn" id="slTpl" hidden>ابدأ بتقسيمتي (مرتب 13,000 و10 بنود)</button>
       <form id="slItemForm" class="fields">
-        <label>البند<input id="slName" required list="slNames" placeholder="إيجار، تحويل لمصر، تحويش..."></label>
+        <label>اختار البند<select id="slPick"></select></label>
+        <label id="slNameWrap" hidden>اسم البند<input id="slName" placeholder="اكتب اسمه"></label>
         <label>المبلغ<input id="slItemAmt" type="number" min="0" step="any" inputmode="decimal" required></label>
         <button class="btn primary" id="slItemBtn">ضيف البند</button>
       </form>
-            <datalist id="slNames"><option>قسط الشقة</option><option>مصروف البيت</option><option>البنزين</option><option>فاتورة الجوال 1</option><option>فاتورة الجوال 2</option><option>قسط البيت</option><option>قسط العربية</option><option>النت</option><option>فاتورة هنار</option><option>الكهرباء</option><option>الإيجار</option><option>تحويل لمصر</option><option>التحويش</option><option>أقساط</option><option>الكريديت كارد</option><option>فواتير</option><option>مقاضي البيت</option><option>أكل وشرب</option><option>مواصلات وبنزين</option><option>اشتراكات</option><option>مصروف شخصي</option><option>هدايا</option></datalist>
     </div>
     <div class="card">
       <h2>المرتب خلال السنة</h2>
@@ -2058,6 +2101,19 @@ $('#pendList').addEventListener('input',e=>{const row=e.target.closest('.pend');
   if(f==='on')p.on=e.target.checked;else if(f==='amount')p.amount=+e.target.value;else p[f]=e.target.value;
   if(f==='type'){p.category=guessCat(p.src,p.type);renderPending()}});
 $('#pendCancel').onclick=()=>{S.pending=[];renderPending()};
+// one tap: read the bank messages an iPhone Shortcut collected in the clipboard and record the new ones
+function showSmsView(){setTab('tx');UI.txView='sms';document.querySelectorAll('#txView button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==='sms'));$('#txListView').hidden=true;$('#smsView').hidden=false}
+async function importClip(){let txt='';
+  try{txt=await navigator.clipboard.readText()}catch(e){showSmsView();toast('ما قدرتش أقرا الحافظة. الصق الرسايل هنا.');return}
+  if(!txt.trim()){toast('الحافظة فاضية. مفيش رسايل جديدة.');return}
+  const known=new Set(S.tx.map(t=>t.hash).filter(Boolean)),fresh=[];let dupe=0;
+  splitSms(txt).forEach(c=>{const p=parseSms(c);if(!p)return;if(known.has(p.hash)){dupe++;return}known.add(p.hash);fresh.push(p)});
+  if(!fresh.length){toast(dupe?'الرسايل دي متسجلة قبل كده':'اللي في الحافظة مش رسايل بنك');return}
+  let ok=0;for(const p of fresh){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
+  toast(`اتسجّل ${ok===1?'حركة واحدة':ok===2?'حركتين':ok+' '+(ok<=10?'حركات':'حركة')} من رسايل البنك${dupe?` · ${dupe} متسجلين قبل كده`:''}`,'ok');
+  // empty the clipboard so the Shortcut starts a fresh pile
+  try{await navigator.clipboard.writeText('')}catch(e){}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-smsclip]'))importClip()});
 $('#pendAdd').onclick=async()=>{
   const sel=S.pending.filter(p=>p.on&&p.amount>0);if(!sel.length){toast('اختار رسالة واحدة على الأقل');return}
   let ok=0;for(const p of sel){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
@@ -2270,6 +2326,10 @@ const SND=(()=>{let ac=null;
     // cards slide back in, then the pocket closes with a soft thump
     close:()=>play((c,t)=>{swish(c,t,.3,2600,600,.32);tone(c,t+.26,.14,140,55,.35);swish(c,t+.26,.08,400,200,.2)}),
     refresh:()=>play((c,t)=>{tone(c,t,.12,520,780,.14);tone(c,t+.1,.22,780,1170,.12)}),
+    // intro: a swish up into a soft three-note chime
+    intro:()=>play((c,t)=>{swish(c,t,.45,300,3000,.22);[[523,0.18],[659,0.3],[988,0.42]].forEach(([f,d])=>{tone(c,t+d,.6,f,f,.1);tone(c,t+d,.4,f*2,f*2,.03,'triangle')})}),
+    // only when the browser already lets us play (no tap yet); otherwise queued notes would burst out later
+    introIfAllowed(){if(!on())return false;try{const c=ctx();if(c&&c.state==='running'){this.intro();return true}}catch(e){}return false},
     on,set:v=>{try{localStorage.setItem(LS+'.sound',v?'1':'0')}catch(e){}}
   }})();
 $('#sndOn').checked=SND.on();
@@ -2512,7 +2572,7 @@ function renderToday(){
   if(B>0){ref=Math.max(0,(B-before)/(dim-day+1));of='من المسموح';sub=ref>0?`مسموحلك النهارده ${money(Math.round(ref))}`:'ميزانية الشهر خلصت'}
   else if(day>1&&before>0){ref=before/(day-1);of='من متوسطك';sub=`متوسط يومك ${money(Math.round(ref))}`}
   else if(!list.length)sub='لسه ماصرفتش حاجة النهارده';
-  if(list.length)sub+=(sub?'<br>':'')+`${list.length} ${list.length>=3&&list.length<=10?'عمليات':'عملية'}`;
+  if(list.length)sub+=(sub?'<br>':'')+(list.length===1?'عملية واحدة':list.length===2?'عمليتين':`${list.length} ${list.length<=10?'عمليات':'عملية'}`);
   const p=ref>0?spent/ref:spent>0?1:0;
   $('#tdArc').style.strokeDashoffset=(263.9*(1-Math.min(1,p))).toFixed(1);
   $('#tdRing').classList.toggle('over',p>1);
@@ -2542,7 +2602,8 @@ function renderSalary(){if(!UI.slM)return;
   // copy last month's items to start fast
   const pm=shiftMonth(m,-1),px=slOf(pm),cp=$('#slCopy');
   cp.hidden=!!items.length||!px||!(px.items||[]).length;if(!cp.hidden)cp.textContent=`انسخ بنود ${monthName(pm)}`;
-  $('#slTpl').hidden=!!items.length||!cp.hidden;
+  {const pk=$('#slPick'),v=pk.value;if(document.activeElement!==pk){pk.innerHTML=slPickHTML();pk.value=v&&[...pk.options].some(o=>o.value===v&&!o.disabled)?v:''}}
+  $('#slReset').hidden=!x;
   // year view
   const y=UI.slY;$('#slYearLbl').textContent=y;
   const ms=Array.from({length:12},(_,k)=>y+'-'+pad(k+1)).filter(k=>slOf(k));
@@ -2552,17 +2613,27 @@ function renderSalary(){if(!UI.slM)return;
   const where=Object.entries(agg).sort((a,b)=>b[1]-a[1]);
   $('#slWhere').innerHTML=where.length?where.map(([n,v])=>`<div class="slrow" style="cursor:default"><span class="dot" style="background:${slColor(n)}"></span><div class="nm">${esc(n)}<span>${tS?pct(v/tS*100)+' من مرتبات السنة · ':''}متوسط ${fmt(Math.round(v/ms.length))} في الشهر</span></div><span class="amt">${amtHTML(v)}</span><span></span></div>`).join(''):emptyBox('لما تضيف بنود هتشوف هنا فلوسك بتروح فين طول السنة.');
 }
-function slResetItem(){UI.slEdit=null;$('#slName').value='';$('#slItemAmt').value=''}
+function slResetItem(){UI.slEdit=null;$('#slName').value='';$('#slItemAmt').value='';$('#slPick').value='';$('#slNameWrap').hidden=true}
 function slSaveEdit(){const x=slOf(UI.slM),name=$('#slEName').value.trim(),amount=+$('#slEAmt').value;if(!x||!name||!(amount>0)){toast('اكتب الاسم والمبلغ');return}
   const id=UI.slEdit;UI.slEdit=null;act(slSave(UI.slM,{items:x.items.map(i=>i.id===id?{...i,name,amount}:i)}),'اتحفظ التعديل')}
 $('#slForm').onsubmit=e=>{e.preventDefault();const v=+$('#slAmt').value;if(!(v>=0))return;$('#slAmt').blur();act(slSave(UI.slM,{amount:v}),'اتحفظ المرتب')};
-$('#slItemForm').onsubmit=e=>{e.preventDefault();const name=$('#slName').value.trim(),amount=+$('#slItemAmt').value;if(!name||!(amount>0))return;
+$('#slItemForm').onsubmit=e=>{e.preventDefault();const pk=$('#slPick').value,name=(pk===SL_OTHER?$('#slName').value:pk).trim(),amount=+$('#slItemAmt').value;if(!name){toast('اختار البند الأول');return}if(!(amount>0)){toast('اكتب المبلغ');return}
   const x=slOf(UI.slM),items=((x&&x.items)||[]).slice();
   items.push({id:rid(),name,amount});slResetItem();act(slSave(UI.slM,{items}),'اتضاف البند')};
 
 // the split the user sent (their spreadsheet), to start a month in one tap
 const SL_TPL=[['قسط الشقة',700],['مصروف البيت',3500],['البنزين',250],['فاتورة الجوال 1',170],['فاتورة الجوال 2',100],['قسط البيت',1250],['قسط العربية',2400],['النت',287],['فاتورة هنار',75],['الكهرباء',175]];
-$('#slTpl').onclick=()=>{const x=slOf(UI.slM);act(slSave(UI.slM,{items:SL_TPL.map(([name,amount])=>({id:rid(),name,amount})),...(!(x&&+x.amount)?{amount:13000}:{})}),'اتضافت تقسيمتك. عدّل اللي اتغير')};
+// item dropdown: your usual items + anything you typed before; picking one fills its last amount
+const SL_OTHER='__other';
+function slPickHTML(){const used=new Set(((slOf(UI.slM)||{}).items||[]).map(i=>i.name.trim())),names=SL_TPL.map(t=>t[0]);
+  S.salary.forEach(x=>(x.items||[]).forEach(i=>{const n=i.name.trim();if(!names.includes(n))names.push(n)}));
+  return'<option value="">— اختار —</option>'+names.map(n=>`<option value="${esc(n)}"${used.has(n)?' disabled':''}>${esc(n)}${used.has(n)?' (موجود)':''}</option>`).join('')+`<option value="${SL_OTHER}">✍️ اسم تاني...</option>`}
+function slLastAmt(n){const xs=S.salary.slice().sort((a,b)=>b.month.localeCompare(a.month));for(const x of xs){const i=(x.items||[]).find(i=>i.name.trim()===n);if(i)return i.amount}const t=SL_TPL.find(t=>t[0]===n);return t?t[1]:''}
+$('#slPick').onchange=e=>{const v=e.target.value,o=v===SL_OTHER;$('#slNameWrap').hidden=!o;
+  if(o){$('#slName').value='';$('#slItemAmt').value='';$('#slName').focus();return}if(v){$('#slItemAmt').value=slLastAmt(v);$('#slItemAmt').focus()}};
+$('#slReset').onclick=()=>{const b=$('#slReset'),x=slOf(UI.slM);if(!x)return;
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='متأكد؟ دوس تاني عشان تمسح المرتب وكل البنود';setTimeout(()=>{b.dataset.armed='';b.textContent='امسح الشهر ده وابدأ من الأول'},3000);return}
+  b.dataset.armed='';b.textContent='امسح الشهر ده وابدأ من الأول';UI.slEdit=null;$('#slAmt').value='';act(store.remove('salary',x.id),'اتمسح الشهر')};
 $('#slCopy').onclick=()=>{const px=slOf(shiftMonth(UI.slM,-1));if(!px)return;const x=slOf(UI.slM);
   act(slSave(UI.slM,{items:(px.items||[]).map(i=>({...i,id:rid(),paid:false})),...(!(x&&+x.amount)?{amount:+px.amount||0}:{})}),'اتنسخت البنود. عدّل اللي اتغير')};
 $('#p-salary').addEventListener('click',e=>{
@@ -2600,6 +2671,14 @@ localStore.load();
 (function migrateSavings(){const old=S.savings.filter(s=>!s.potId);if(!old.length)return;const id=rid();const first=old.map(s=>s.date).sort()[0]||todayISO();S.pots.push({id,where:"other",source:"other",start:0,startDate:todayISO(),firstDate:first,monthly:0,note:"تحويشك القديم",ts:Date.now()});old.forEach(s=>s.potId=id);localStore.persist()})();
 {let t='home';try{const s=localStorage.getItem(LS+'.tab');if(s&&TITLES[s])t=s}catch(e){}setTab(t)}
 renderSwatches();renderCatGrid();render();
+// intro: shows once per app open (not after pull-to-refresh); tap to skip. Phones block sound until the first tap, so the chime plays on load where allowed, or on that tap.
+(function(){const el=$('#intro');if(!el)return;let seen=false;try{seen=sessionStorage.getItem(LS+'.intro')==='1';sessionStorage.setItem(LS+'.intro','1')}catch(e){}
+  if(seen){el.remove();return}
+  let done=false,played=false;const chime=()=>{if(played)return;played=true;SND.intro()};
+  const close=()=>{if(done)return;done=true;el.classList.add('out');setTimeout(()=>el.remove(),550)};
+  played=SND.introIfAllowed();
+  el.addEventListener('click',()=>{chime();setTimeout(close,250)});
+  setTimeout(close,2300)})();
 setTimeout(()=>autoPostPlanned(),600);
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
