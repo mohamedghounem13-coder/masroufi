@@ -541,7 +541,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .mswitch button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .slbar{display:flex;height:18px;border-radius:9px;overflow:hidden;background:var(--soft)}
 .slbar i{display:block;height:100%}
-.slrow{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.slrow{display:grid;grid-template-columns:12px minmax(0,1fr) auto auto auto auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .slrow:last-child{border-bottom:0}
 .slrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .slrow .nm span{display:block;font-size:.75rem;color:var(--muted)}
@@ -550,6 +550,10 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .slpaid{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:none;color:transparent;font-weight:800;cursor:pointer}
 .slpaid[aria-pressed="true"]{background:var(--good,#2E9E5B);border-color:var(--good,#2E9E5B);color:#06210C}
 .slrow.paid .nm,.slrow.paid .amt{opacity:.55}
+.slpen{width:30px;height:30px;border-radius:50%;border:0;background:var(--soft);color:var(--brand-ink);display:grid;place-items:center;cursor:pointer}
+.slpen svg{width:15px;height:15px}
+.sledrow{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:8px;padding:10px;margin:4px 0;border-radius:14px;background:color-mix(in srgb,var(--brand) 10%,var(--soft));box-shadow:inset 0 0 0 1.5px var(--brand)}
+.sledrow input{min-width:0}
 #slWhere .slrow{grid-template-columns:12px minmax(0,1fr) auto auto}
 .slm{display:flex;flex-direction:column;gap:6px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .slm:last-child{border-bottom:0}
@@ -979,8 +983,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
         <label>المبلغ<input id="slItemAmt" type="number" min="0" step="any" inputmode="decimal" required></label>
         <button class="btn primary" id="slItemBtn">ضيف البند</button>
       </form>
-      <button type="button" class="btn link small" id="slItemCancel" hidden>إلغاء التعديل</button>
-      <datalist id="slNames"><option>قسط الشقة</option><option>مصروف البيت</option><option>البنزين</option><option>فاتورة الجوال 1</option><option>فاتورة الجوال 2</option><option>قسط البيت</option><option>قسط العربية</option><option>النت</option><option>فاتورة هنار</option><option>الكهرباء</option><option>الإيجار</option><option>تحويل لمصر</option><option>التحويش</option><option>أقساط</option><option>الكريديت كارد</option><option>فواتير</option><option>مقاضي البيت</option><option>أكل وشرب</option><option>مواصلات وبنزين</option><option>اشتراكات</option><option>مصروف شخصي</option><option>هدايا</option></datalist>
+            <datalist id="slNames"><option>قسط الشقة</option><option>مصروف البيت</option><option>البنزين</option><option>فاتورة الجوال 1</option><option>فاتورة الجوال 2</option><option>قسط البيت</option><option>قسط العربية</option><option>النت</option><option>فاتورة هنار</option><option>الكهرباء</option><option>الإيجار</option><option>تحويل لمصر</option><option>التحويش</option><option>أقساط</option><option>الكريديت كارد</option><option>فواتير</option><option>مقاضي البيت</option><option>أكل وشرب</option><option>مواصلات وبنزين</option><option>اشتراكات</option><option>مصروف شخصي</option><option>هدايا</option></datalist>
     </div>
     <div class="card">
       <h2>المرتب خلال السنة</h2>
@@ -2535,7 +2538,7 @@ function renderSalary(){if(!UI.slM)return;
   const base=Math.max(sal,out)||1,rows=items.slice().sort((a,b)=>b.amount-a.amount);
   $('#slBar').innerHTML=rows.map(i=>`<i style="width:${(i.amount/base*100).toFixed(2)}%;background:${slColor(i.name)}"></i>`).join('');
   $('#slBar').hidden=!rows.length;
-  $('#slItems').innerHTML=rows.length?rows.map(i=>`<div class="slrow${i.paid?' paid':''}" data-sledit="${i.id}"><span class="dot" style="background:${slColor(i.name)}"></span><div class="nm">${esc(i.name)}${sal?`<span>${pct(i.amount/sal*100)} من المرتب</span>`:''}</div><span class="amt">${amtHTML(i.amount)}</span><button type="button" class="slpaid" data-slpaid="${i.id}" aria-pressed="${!!i.paid}" aria-label="${i.paid?'اتدفع':'علّمه إنه اتدفع'}">✓</button><button type="button" class="btn x" data-sldel="${i.id}" aria-label="امسح">✕</button></div>`).join('')+(rows.length>1?`<div class="slfoot"><span>الإجمالي</span><span>${amtHTML(out)}</span></div>`:'')+(rows.some(i=>i.paid)?`<div class="row between muted small"><span>اتدفع ${fmt(sum(rows.filter(i=>i.paid)))}</span><span>لسه ${fmt(sum(rows.filter(i=>!i.paid)))}</span></div>`:''):emptyBox('ضيف كل حاجة بتطلع من المرتب: الإيجار، التحويل لمصر، التحويش...');
+  $('#slItems').innerHTML=rows.length?rows.map(i=>UI.slEdit===i.id?`<div class="sledrow"><input id="slEName" value="${esc(i.name)}" aria-label="اسم البند"><input id="slEAmt" type="number" min="0" step="any" inputmode="decimal" value="${i.amount}" aria-label="المبلغ"><button type="button" class="btn primary small" data-slsave>احفظ</button><button type="button" class="btn small" data-slcancel>إلغاء</button></div>`:`<div class="slrow${i.paid?' paid':''}" data-sledit="${i.id}"><span class="dot" style="background:${slColor(i.name)}"></span><div class="nm">${esc(i.name)}${sal?`<span>${pct(i.amount/sal*100)} من المرتب</span>`:''}</div><span class="amt">${amtHTML(i.amount)}</span><button type="button" class="slpaid" data-slpaid="${i.id}" aria-pressed="${!!i.paid}" aria-label="${i.paid?'اتدفع':'علّمه إنه اتدفع'}">✓</button><button type="button" class="slpen" data-sledit="${i.id}" aria-label="عدّل"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button><button type="button" class="btn x" data-sldel="${i.id}" aria-label="امسح">✕</button></div>`).join('')+(rows.length>1?`<div class="slfoot"><span>الإجمالي</span><span>${amtHTML(out)}</span></div>`:'')+(rows.some(i=>i.paid)?`<div class="row between muted small"><span>اتدفع ${fmt(sum(rows.filter(i=>i.paid)))}</span><span>لسه ${fmt(sum(rows.filter(i=>!i.paid)))}</span></div>`:''):emptyBox('ضيف كل حاجة بتطلع من المرتب: الإيجار، التحويل لمصر، التحويش...');
   // copy last month's items to start fast
   const pm=shiftMonth(m,-1),px=slOf(pm),cp=$('#slCopy');
   cp.hidden=!!items.length||!px||!(px.items||[]).length;if(!cp.hidden)cp.textContent=`انسخ بنود ${monthName(pm)}`;
@@ -2549,13 +2552,14 @@ function renderSalary(){if(!UI.slM)return;
   const where=Object.entries(agg).sort((a,b)=>b[1]-a[1]);
   $('#slWhere').innerHTML=where.length?where.map(([n,v])=>`<div class="slrow" style="cursor:default"><span class="dot" style="background:${slColor(n)}"></span><div class="nm">${esc(n)}<span>${tS?pct(v/tS*100)+' من مرتبات السنة · ':''}متوسط ${fmt(Math.round(v/ms.length))} في الشهر</span></div><span class="amt">${amtHTML(v)}</span><span></span></div>`).join(''):emptyBox('لما تضيف بنود هتشوف هنا فلوسك بتروح فين طول السنة.');
 }
-function slResetItem(){UI.slEdit=null;$('#slName').value='';$('#slItemAmt').value='';$('#slItemBtn').textContent='ضيف البند';$('#slItemCancel').hidden=true}
+function slResetItem(){UI.slEdit=null;$('#slName').value='';$('#slItemAmt').value=''}
+function slSaveEdit(){const x=slOf(UI.slM),name=$('#slEName').value.trim(),amount=+$('#slEAmt').value;if(!x||!name||!(amount>0)){toast('اكتب الاسم والمبلغ');return}
+  const id=UI.slEdit;UI.slEdit=null;act(slSave(UI.slM,{items:x.items.map(i=>i.id===id?{...i,name,amount}:i)}),'اتحفظ التعديل')}
 $('#slForm').onsubmit=e=>{e.preventDefault();const v=+$('#slAmt').value;if(!(v>=0))return;$('#slAmt').blur();act(slSave(UI.slM,{amount:v}),'اتحفظ المرتب')};
 $('#slItemForm').onsubmit=e=>{e.preventDefault();const name=$('#slName').value.trim(),amount=+$('#slItemAmt').value;if(!name||!(amount>0))return;
   const x=slOf(UI.slM),items=((x&&x.items)||[]).slice();
-  if(UI.slEdit){const i=items.findIndex(t=>t.id===UI.slEdit);if(i>=0)items[i]={...items[i],name,amount}}else items.push({id:rid(),name,amount});
-  const ed=!!UI.slEdit;slResetItem();act(slSave(UI.slM,{items}),ed?'اتحفظ التعديل':'اتضاف البند')};
-$('#slItemCancel').onclick=slResetItem;
+  items.push({id:rid(),name,amount});slResetItem();act(slSave(UI.slM,{items}),'اتضاف البند')};
+
 // the split the user sent (their spreadsheet), to start a month in one tap
 const SL_TPL=[['قسط الشقة',700],['مصروف البيت',3500],['البنزين',250],['فاتورة الجوال 1',170],['فاتورة الجوال 2',100],['قسط البيت',1250],['قسط العربية',2400],['النت',287],['فاتورة هنار',75],['الكهرباء',175]];
 $('#slTpl').onclick=()=>{const x=slOf(UI.slM);act(slSave(UI.slM,{items:SL_TPL.map(([name,amount])=>({id:rid(),name,amount})),...(!(x&&+x.amount)?{amount:13000}:{})}),'اتضافت تقسيمتك. عدّل اللي اتغير')};
@@ -2568,7 +2572,10 @@ $('#p-salary').addEventListener('click',e=>{
   const pd=e.target.closest('[data-slpaid]');if(pd){const x=slOf(UI.slM);if(!x)return;act(slSave(UI.slM,{items:x.items.map(i=>i.id===pd.dataset.slpaid?{...i,paid:!i.paid}:i)}));return}
   const dl=e.target.closest('[data-sldel]');if(dl){const x=slOf(UI.slM);if(!x)return;act(slSave(UI.slM,{items:x.items.filter(i=>i.id!==dl.dataset.sldel)}),'اتمسح البند');return}
   const ed=e.target.closest('[data-sledit]');if(ed){const x=slOf(UI.slM),i=x&&x.items.find(t=>t.id===ed.dataset.sledit);if(!i)return;
-    UI.slEdit=i.id;$('#slName').value=i.name;$('#slItemAmt').value=i.amount;$('#slItemBtn').textContent='احفظ التعديل';$('#slItemCancel').hidden=false;$('#slItemAmt').focus()}});
+    UI.slEdit=i.id;renderSalary();const a=$('#slEAmt');if(a){a.focus();a.select()}return}
+  if(e.target.closest('[data-slsave]')){slSaveEdit();return}
+  if(e.target.closest('[data-slcancel]')){UI.slEdit=null;renderSalary()}});
+$('#p-salary').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('.sledrow')){e.preventDefault();slSaveEdit()}});
 
 /* ---------- wallet pocket ---------- */
 function pocketHTML(d){
