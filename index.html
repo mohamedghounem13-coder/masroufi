@@ -9,16 +9,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="مصروفي">
-<link rel="manifest" href="manifest.webmanifest?v=2">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=2">
-<link rel="icon" type="image/png" href="icons/icon-192.png?v=2">
+<link rel="manifest" href="manifest.webmanifest?v=3">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=3">
+<link rel="icon" type="image/png" href="icons/icon-192.png?v=3">
 <style>
 html{-webkit-text-size-adjust:100%;touch-action:manipulation}
 *{touch-action:manipulation}
 input:not(#txAmt),select,textarea{font-size:16px!important}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);-webkit-tap-highlight-color:transparent}
 /* the status bar is see-through: keep a strip of page colour behind the clock while scrolling */
-body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60;pointer-events:none}
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--status-bg,var(--bg));z-index:60;pointer-events:none}
 img{max-width:100%}
 [hidden]{display:none!important}
 :root.f-kufam{--display:"Kufam","Alexandria",system-ui,sans-serif;--body:"Kufam","IBM Plex Sans Arabic",system-ui,sans-serif}
@@ -523,8 +523,9 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 /* add-card form only shows when opened from the wallet */
 #accAdd:not([open]){display:none}
 /* today ring */
-.today{flex-direction:row;align-items:center;gap:16px;cursor:pointer}
-.ring{width:92px;height:92px;flex:none;position:relative}
+.today{display:flex;flex-direction:row;align-items:center;gap:16px;cursor:pointer}
+#catRingsCard{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.ring{width:80px;height:80px;flex:none;position:relative}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:9}
 .ring .bg{stroke:var(--soft)}
@@ -619,7 +620,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 <div class="app" dir="rtl" lang="ar">
   <header class="top">
     <div class="r">
-      <h1 style="display:flex;align-items:center;gap:10px"><img src="icons/icon-192.png?v=2" width="42" height="42" alt="" style="border-radius:11px;flex:none;box-shadow:0 2px 8px rgb(0 0 0/.2)">مصروفي</h1>
+      <h1 style="display:flex;align-items:center;gap:10px"><img src="icons/icon-192.png?v=3" width="42" height="42" alt="" style="border-radius:11px;flex:none;box-shadow:0 2px 8px rgb(0 0 0/.2)">مصروفي</h1>
     </div>
     <div class="r">
       <span class="page" id="pageTitle">نظرة عامة</span>
@@ -640,17 +641,15 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="meter"><i id="hMeter" style="width:0"></i></div>
       <div class="foot"><span id="hFootA"></span><span id="hFootB"></span></div>
     </div>
-    <div class="two">
-      <div class="mini"><div class="t"><span>الدخل</span><span class="circ in"><svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div><div class="v" id="hInc"></div></div>
-      <div class="mini"><div class="t"><span>المصروفات</span><span class="circ out"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span></div><div class="v" id="hExp"></div></div>
-    </div>
-    <div class="card today" id="todayCard" role="button" tabindex="0" data-goto="tx">
+    <div class="card daycard">
+    <div class="today" id="todayCard" role="button" tabindex="0" data-goto="tx">
       <div class="ring" id="tdRing"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="tdArc" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/></svg><div class="c" id="tdPct"></div></div>
       <div class="tt"><span class="l">صرفت النهارده</span><b id="tdAmt"></b><span class="muted small" id="tdSub"></span></div>
     </div>
-    <div class="card" id="catRingsCard">
-      <div class="row between"><b>صرفك حسب التصنيف</b><span class="muted small" id="crHint"></span></div>
+    <div id="catRingsCard">
+      <div class="row between"><b class="small">حسب التصنيف</b><span class="muted small" id="crHint"></span></div>
       <div class="crings" id="catRings"></div>
+    </div>
     </div>
 
     <div class="sect"><h2>حساباتي وكروتي</h2></div>
@@ -1534,14 +1533,13 @@ function renderHome(d){
   if(B>0){const left=B-d.expense,p=Math.max(0,Math.min(100,left/B*100));
     $('#hLbl').textContent=left>=0?`فاضل من ميزانية ${mName}`:`عدّيت ميزانية ${mName} بـ`;
     $('#hBig').innerHTML=bigMoney(Math.abs(left));meterWrap.hidden=false;$('#hMeter').style.width=p+'%';
-    $('#hFootA').innerHTML=left>=0?`صرفت ${money(d.expense)}`:'خفّف الصرف الكام يوم الجايين';$('#hFootB').innerHTML=`الميزانية ${money(B)}`;}
+    $('#hFootA').innerHTML=left>=0?`صرفت ${fmt(d.expense)}`:'خفّف الصرف الكام يوم الجايين';$('#hFootB').innerHTML=`${d.income>0?`دخلك ${fmt(d.income)} · `:''}الميزانية ${fmt(B)}`;}
   else if(d.income>0){const left=d.income-d.expense,p=Math.max(0,Math.min(100,left/d.income*100));
     $('#hLbl').textContent=left>=0?`معاك من فلوس ${mName}`:`صرفت أكتر من دخلك بـ`;
     $('#hBig').innerHTML=bigMoney(Math.abs(left));meterWrap.hidden=false;$('#hMeter').style.width=p+'%';
     $('#hFootA').innerHTML=`دخلك ${money(d.income)} − صرفت ${money(d.expense)}`;$('#hFootB').innerHTML='';}
   else{$('#hLbl').textContent=`صرفت في ${mName}`;$('#hBig').innerHTML=bigMoney(d.expense);meterWrap.hidden=true;
     $('#hFootA').innerHTML='<button type="button" class="btn tiny" data-goto="stats" style="background:rgb(255 255 255/.16);color:inherit">حط ميزانية الشهر ←</button>';$('#hFootB').innerHTML='';}
-  $('#hInc').innerHTML=amtHTML(d.income);$('#hExp').innerHTML=amtHTML(d.expense);
   renderToday();renderCatRings(d);
   if(UI.openAcc&&!accById(UI.openAcc))UI.openAcc=null;
   $('#walletHint').hidden=S.accounts.length<2;
@@ -1563,10 +1561,10 @@ function renderHome(d){
   if(S.accounts.length&&!UI.walletOpen)$('#homeAccts').innerHTML=pocketHTML(d);
   else if(S.accounts.length)$('#homeAccts').insertAdjacentHTML('afterbegin','<button type="button" class="pocketback" data-pocketclose>⌄ رجّع الكروت للجيب</button>');
   $('#homeAccts').classList.toggle('closed',!!S.accounts.length&&!UI.walletOpen);$('#walletHint').hidden=!UI.walletOpen||S.accounts.length<2;
-  const up=[...S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).map(s=>({d:s.next,h:subItem(s,false)})),...S.planned.filter(p=>!p.done&&p.due&&daysUntil(p.due)<=10).map(p=>({d:p.due,h:plnItem(p,false)}))].sort((a,b)=>a.d.localeCompare(b.d)).slice(0,4);
+  const up=[...S.subs.filter(s=>s.active!==false&&s.next&&daysUntil(s.next)<=10).map(s=>({d:s.next,h:subItem(s,false)})),...S.planned.filter(p=>!p.done&&p.due&&daysUntil(p.due)<=10).map(p=>({d:p.due,h:plnItem(p,false)}))].sort((a,b)=>a.d.localeCompare(b.d)).slice(0,2);
   $('#homeSubsWrap').hidden=!up.length;
   $('#homeSubs').innerHTML=up.map(x=>x.h).join('');
-  const rec=d.tx.slice().sort(byDateDesc).slice(0,5);
+  const rec=d.tx.slice().sort(byDateDesc).slice(0,3);
   $('#homeRecent').innerHTML=rec.length?rec.map(t=>txItem(t,false)).join(''):emptyBox('مفيش عمليات في الشهر ده. دوس «إضافة مصروف» أو الصق رسايل البنك من العمليات.');
 }
 
@@ -2555,16 +2553,20 @@ const THEMES={
   purple:{n:'بنفسجي', b:'#B57BFF'},
   orange:{n:'برتقالي',b:'#FF8A3D'},
   yellow:{n:'أصفر',   b:'#F2E640'},
-  red:   {n:'أحمر',   b:'#FF4D5E'}
+  red:   {n:'أحمر',   b:'#FF4D5E'},
+  mono:  {n:'أسود',   b:'#F4F4F2',sw:'#111111'},
+  light: {n:'أبيض',   b:'#161616',sw:'#FFFFFF',light:true}
 };
 // mix two hex colors: w = share of a
 function hexMix(a,b,w){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);return'#'+A.map((v,i)=>Math.round(v*w+B[i]*(1-w)).toString(16).padStart(2,'0')).join('')}
-function applyTheme(k){const t=THEMES[k]||THEMES.neon,b=t.b;document.documentElement.classList.add('t-neon');let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
+function applyTheme(k){const t=THEMES[k]||THEMES.neon,b=t.b;document.documentElement.classList.add('t-neon');document.documentElement.classList.toggle('t-light',!!t.light);let st=document.getElementById('themeStyle');if(!st){st=document.createElement('style');st.id='themeStyle';document.head.appendChild(st)}
   const rgb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16)).join(' '),K='#030403';
   st.textContent=`html:root.t-neon{--brand:${b};--brand-ink:${hexMix(b,'#ffffff',.8)};--lime:${hexMix(b,'#ffffff',.6)};--k-wine:${hexMix(b,'#000000',.45)};--ng:${rgb};--n-hi:${hexMix(b,'#ffffff',.72)};--n-lo:${hexMix(b,'#000000',.68)};--n-pale:${hexMix(b,'#ffffff',.25)};--n-on:${hexMix(b,'#000000',.13)};--n-bg:${hexMix(b,K,.035)};--n-surf:${hexMix(b,K,.07)};--n-soft:${hexMix(b,'#0a0b0a',.1)};--n-line:${hexMix(b,'#0a0b0a',.14)};--n-card1:${hexMix(b,'#0b0c0b',.08)};--n-card2:${hexMix(b,K,.05)};--n-muted:${hexMix(b,'#8f9690',.15)};--n-faint:${hexMix(b,'#4d544f',.15)};--n-glowbg:${hexMix(b,K,.2)}}`;
-  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',hexMix(b,K,.035));}
+  // white theme: same layout, light surfaces, black accents; the clock stays white so its strip is dark
+  if(t.light)st.textContent=`html:root.t-neon{--brand:#161616;--brand-ink:#161616;--lime:#CFCFCA;--k-wine:#3A3A3A;--ng:22 22 22;--n-hi:#4A4A4A;--n-lo:#000000;--n-pale:#6A6A6A;--n-on:#FFFFFF;--on-brand:#FFFFFF;--n-bg:#F3F3F0;--n-surf:#FFFFFF;--n-soft:#EAEAE6;--n-line:#E0E0DB;--n-card1:#FFFFFF;--n-card2:#FAFAF7;--n-muted:#6E6E69;--n-faint:#A8A8A2;--n-glowbg:#FFFFFF;--fg:#141414;--good:#1E9E4A;--bad:#D93A3A;--warn:#B97F00;--status-bg:#161616;color-scheme:light}`;
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t.light?'#161616':hexMix(b,K,.035));}
 function getTheme(){try{if(!localStorage.getItem(LS+'.neonV')){localStorage.setItem(LS+'.neonV','1');localStorage.setItem(LS+'.theme','neon')}const k=localStorage.getItem(LS+'.theme');return THEMES[k]?k:'neon'}catch(e){return'neon'}}
-function renderThemes(){const cur=getTheme();$('#themeRow').innerHTML=Object.entries(THEMES).map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${k===cur}" aria-label="${t.n}"><i style="background:${t.b}"></i><span>${t.n}</span></button>`).join('')}
+function renderThemes(){const cur=getTheme();$('#themeRow').innerHTML=Object.entries(THEMES).map(([k,t])=>`<button type="button" data-theme-pick="${k}" aria-pressed="${k===cur}" aria-label="${t.n}"><i style="background:${t.sw||t.b}${t.sw?';box-shadow:inset 0 0 0 1.5px '+(t.light?'#ccc':'#666'):''}"></i><span>${t.n}</span></button>`).join('')}
 $('#themeRow').addEventListener('click',e=>{const b=e.target.closest('[data-theme-pick]');if(!b)return;try{localStorage.setItem(LS+'.theme',b.dataset.themePick)}catch(err){}applyTheme(b.dataset.themePick);renderThemes();render()});
 applyTheme(getTheme());renderThemes();
 
