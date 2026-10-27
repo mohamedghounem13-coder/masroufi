@@ -609,6 +609,9 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
 .sldonut .c b{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.2}
 .sldonut .c span{font-size:.75rem;color:var(--muted)}
 .sldonut.over .c b{color:var(--bad)}
+/* stats: one group of cards at a time; the category list under the donut replaces its legend */
+#stDonut .legend{display:none}#stDonut .donut{justify-content:center}
+#p-stats[data-view="cats"] [data-sv]:not([data-sv="cats"]),#p-stats[data-view="time"] [data-sv]:not([data-sv="time"]),#p-stats[data-view="budget"] [data-sv]:not([data-sv="budget"]){display:none!important}
 </style>
 </head>
 <body>
@@ -736,7 +739,7 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
   </section>
 
   <!-- STATS -->
-  <section class="panel" id="p-stats" hidden>
+  <section class="panel" id="p-stats" data-view="cats" hidden>
     <div class="chips" id="rangeChips">
       <button type="button" data-r="month" aria-pressed="true">الشهر المختار</button>
       <button type="button" data-r="7" aria-pressed="false">آخر 7 أيام</button>
@@ -759,19 +762,21 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="mini"><div class="t"><span>الدخل</span><span class="circ in"><svg class="i" viewBox="0 0 24 24"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div><div class="v" id="rInc"></div></div>
       <div class="mini"><div class="t"><span>متوسط اليوم</span></div><div class="v" id="rAvg"></div></div>
     </div>
-    <div class="card" id="rAccCard">
+    <div class="seg" id="statView"><button type="button" data-v="cats" aria-pressed="true">فين بتصرف</button><button type="button" data-v="time" aria-pressed="false">مع الوقت</button><button type="button" data-v="budget" aria-pressed="false">الميزانية</button></div>
+    <div class="card" id="rAccCard" data-sv="cats">
       <h2>الصرف من كل حساب</h2>
       <div class="cats" id="rAccs"></div>
     </div>
-    <div class="card">
+    <div class="card" data-sv="cats">
       <h2>توزيع المصروفات</h2>
       <div id="stDonut"></div>
+      <div class="cats" id="stCats"></div>
     </div>
-    <div class="card">
+    <div class="card" data-sv="time">
       <h2>المصروفات حسب يوم الأسبوع</h2>
       <div id="stWeek"></div>
     </div>
-    <div class="card">
+    <div class="card" data-sv="budget">
       <div class="row between"><h2>الميزانية الشهرية</h2><button class="btn link small" id="budgetEdit">تعديل</button></div>
       <div class="row between">
         <div><div class="amt" style="font-size:1.25rem" id="bTotal"></div><span class="muted small">إجمالي الميزانية</span></div>
@@ -781,13 +786,9 @@ svg text{font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,sans-serif;l
       <div class="row between small muted"><span id="bLeft"></span><span id="bUsed"></span></div>
       <form id="budgetForm" class="row" hidden style="flex-wrap:nowrap"><input id="budgetIn" type="number" min="0" step="100" inputmode="decimal" placeholder="ميزانية الشهر بالريال"><button class="btn primary">احفظ</button></form>
     </div>
-    <div class="card">
+    <div class="card" data-sv="time">
       <h2>آخر 6 شهور</h2>
       <div id="stTrend"></div>
-    </div>
-    <div class="card">
-      <h2>كل الفئات</h2>
-      <div class="cats" id="stCats"></div>
     </div>
     <details class="add" id="rListWrap">
       <summary id="rListTitle">كل العمليات في المدة دي</summary>
@@ -2035,6 +2036,8 @@ $('#monthSel').onchange=e=>{curMonth=e.target.value;render()};
 
 function seg(id,key,after){const el=$(id);el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;UI[key]=b.dataset.v;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));after&&after(b.dataset.v)})}
 seg('#txType','txType',renderCatGrid);
+{let v='cats';try{v=localStorage.getItem(LS+'.sv')||v}catch(e){}if(!['cats','time','budget'].includes(v))v='cats';$('#p-stats').dataset.view=v;document.querySelectorAll('#statView button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+seg('#statView','statView',v=>{$('#p-stats').dataset.view=v;try{localStorage.setItem(LS+'.sv',v)}catch(e){}});
 seg('#txView','txView',v=>{$('#txListView').hidden=v!=='list';$('#smsView').hidden=v!=='sms'});
 $('#txCats').addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;UI.txCat=b.dataset.cat;renderCatGrid()});
 $('#sColor').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;UI.subColor=b.dataset.c;renderSwatches()});
@@ -2448,7 +2451,10 @@ const NAV_ALL=[...document.querySelectorAll('.nav [data-tab]')].map(b=>({k:b.dat
 const MORE_ICON='<svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/></svg>';
 function getPins(){try{const p=JSON.parse(localStorage.getItem(LS+'.pins'));if(Array.isArray(p)&&p.length)return p.filter(k=>NAV_ALL.some(t=>t.k===k)).slice(0,4)}catch(e){}return['home','tx','stats','save']}
 function setPins(p){try{localStorage.setItem(LS+'.pins',JSON.stringify(p))}catch(e){}buildNav();renderMore();if(typeof renderPinRow==='function')renderPinRow()}
-function markNav(){const pins=getPins();document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===UI.tab));const m=document.querySelector('.nav [data-more]');if(m)m.setAttribute('aria-selected',!!UI.tab&&!pins.includes(UI.tab))}
+function markNav(){const pins=getPins();document.querySelectorAll('.nav [data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===UI.tab));const m=document.querySelector('.nav [data-more]');if(!m)return;
+  // on a section that isn't in the bar, the "more" button shows that section so you know where you are
+  const away=!!UI.tab&&!pins.includes(UI.tab),t=away&&NAV_ALL.find(x=>x.k===UI.tab);
+  m.setAttribute('aria-selected',away);m.innerHTML=t?`${t.icon}<span>${t.label}</span>`:`${MORE_ICON}<span>المزيد</span>`}
 function buildNav(){const pins=getPins();
   document.querySelector('.nav .in').innerHTML=pins.map(k=>{const t=NAV_ALL.find(x=>x.k===k);return`<button role="tab" data-tab="${k}" aria-selected="false">${t.icon}<span>${t.label}</span></button>`}).join('')+`<button type="button" data-more aria-selected="false">${MORE_ICON}<span>المزيد</span></button>`;markNav()}
 function renderMore(){const pins=getPins();
