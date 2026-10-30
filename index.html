@@ -1142,6 +1142,7 @@ html:root.t-neon .pocket .pouch .pv{font-size:1.6rem}
       <label>التاريخ<input id="txDate" type="date" required></label>
     </div>
     <label>ملاحظة<input id="txNote" placeholder="مثلاً: مقاضي الأسبوع"></label>
+    <label style="grid-column:1/-1">تعليق (اختياري)<input id="txComment" placeholder="مثلاً: فلوس الحلاقة، الجيم"></label>
     <button class="btn primary big" id="txSubmit">ضيف</button>
     <button type="button" class="btn link small" id="txDelete" hidden style="color:var(--bad)">امسح العملية دي</button>
   </form>
@@ -1436,6 +1437,11 @@ function findAmount(t){
 // messages that mention money but aren't a transaction: codes, statements, due reminders, declined payments
 const SMS_NOISE=/(رمز التحقق|رمز التفعيل|رمز العملية|كلمة المرور|كلمة السر|\bOTP\b|verification code|one[- ]time|كشف حساب|كشف الحساب|statement|الحد الأدنى|الحد الادنى|minimum (?:due|payment)|المبلغ المستحق|total due|amount due|مرفوضة|تم رفض|declined|failed|لم تتم|غير ناجحة)/i;
 const isSmsNoise=raw=>SMS_NOISE.test(normDigits(raw));
+// what you set on a bank message (category + comment) is remembered per shop and reused on its next message
+const SMS_GENERIC=['مصروف من رسالة','إيداع','حوالة','سحب صراف','رسوم بنكية','سداد فاتورة'];
+const smsKey=n=>{const k=String(n||'').trim();return!k||SMS_GENERIC.includes(k)?'':k.toLowerCase().replace(/[\d*#._\-]+/g,' ').replace(/\s+/g,' ').trim()};
+function smsRemember(old,data){const key=old.mkey||smsKey(old.note);if(!key)return;
+  act(store.saveSettings({smsLearn:{...(S.settings.smsLearn||{}),[key]:{type:data.type,category:data.category,comment:data.comment}}}))}
 function parseSms(raw){
   const t=normDigits(raw).replace(/\s+/g,' ').trim();
   if(SMS_NOISE.test(t))return null;
@@ -1459,7 +1465,8 @@ function parseSms(raw){
   // category: trust the shop name first; the bank's own words ("شراء إنترنت") say nothing about what you bought
   let category=merchant?guessCat(merchant,type):'تاني';
   if(category==='تاني')category=guessCat(t.replace(/شراء\s*(?:عبر\s*)?(?:الإنترنت|الانترنت|إنترنت|انترنت|نقاط البيع)|(?:online|internet|pos)\s*purchase/gi,' '),type);
-  return{amount,type,date,note,category,accountId:matchAccount(t),hash:hash(t),src:raw.trim()};
+  const mkey=smsKey(note),L=(S.settings.smsLearn||{})[mkey];if(L&&L.type===type&&L.category)category=L.category;
+  return{amount,type,date,note,comment:L&&L.type===type?L.comment||'':'',mkey,category,accountId:matchAccount(t),hash:hash(t),src:raw.trim()};
 }
 function hash(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return'h'+(h>>>0).toString(36)}
 function splitSms(text){
@@ -1545,7 +1552,7 @@ const budgetOf=d=>+S.settings.budget>0?+S.settings.budget:d.income;
 function txItem(t,del=true){
   const out=t.type==='expense';const a=accById(t.accountId);
   const gk=out?guessIcon(t.note):'';return`<div class="item" data-txedit="${t.id}" style="cursor:pointer">${gk?`<span class="badge" style="background:color-mix(in srgb,${catColor(t.category)} 16%,transparent);color:${catColor(t.category)}">${iconSvg(gk)}</span>`:catCirc(t.category,!out)}
-  <div class="what"><b>${esc(t.note||t.category)}</b><span>${esc(t.category)}${a?' · '+esc(a.bank)+' '+(ACC_TYPE[a.type]||''):''}${t.source==='sms'?' · رسالة':t.source==='sub'?' · اشتراك':''}</span></div>
+  <div class="what"><b>${esc(t.comment||t.note||t.category)}</b><span>${t.comment&&t.note?esc(t.note)+' · ':''}${esc(t.category)}${a?' · '+esc(a.bank)+' '+(ACC_TYPE[a.type]||''):''}${t.source==='sms'?' · رسالة':t.source==='sub'?' · اشتراك':''}</span></div>
   <div class="end"><span class="amt ${out?'':'in'}">${out?'':'+'}${amtHTML(t.amount)}</span><span class="muted small">${dayLabel(t.date)}</span></div>
   ${del?`<button class="btn x" data-del="tx:${t.id}" aria-label="امسح">✕</button>`:'<span></span>'}</div>`;
 }
@@ -2072,20 +2079,20 @@ $('#aColor').addEventListener('click',e=>{const b=e.target.closest('button');if(
 ['#txDate','#flDate','#sNext','#svDate'].forEach(s=>$(s).value=todayISO());
 
 // sheet
-function openSheet(){UI.editTx=null;$('#txSheetTitle').textContent='حركة جديدة';$('#txSubmit').textContent='ضيف';$('#txDelete').hidden=true;$('#txAmt').value='';$('#txNote').value='';showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
+function openSheet(){UI.editTx=null;$('#txSheetTitle').textContent='حركة جديدة';$('#txSubmit').textContent='ضيف';$('#txDelete').hidden=true;$('#txAmt').value='';$('#txNote').value='';$('#txComment').value='';showSheet('#sheet');$('#txDate').value=curMonth===todayISO().slice(0,7)?todayISO():curMonth+'-01';renderCatGrid();setTimeout(()=>$('#txAmt').focus(),50)}
 function closeSheet(){hideSheet('#sheet');UI.editTx=null}
 $('#sheetClose').onclick=closeSheet;
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sheet').classList.contains('open'))closeSheet()});
 $('#txForm').onsubmit=e=>{e.preventDefault();const amount=+$('#txAmt').value;if(!(amount>0))return;
-  const data={type:UI.txType,amount,category:UI.txCat,note:$('#txNote').value.trim(),date:$('#txDate').value,accountId:$('#txAcc').value||''};
-  if(UI.editTx){act(store.update('tx',UI.editTx,data),'اتحفظ التعديل')}else act(store.add('tx',{...data,source:'manual',ts:Date.now()}),'اتضاف');
-  $('#txAmt').value='';$('#txNote').value='';closeSheet()};
+  const data={type:UI.txType,amount,category:UI.txCat,note:$('#txNote').value.trim(),comment:$('#txComment').value.trim(),date:$('#txDate').value,accountId:$('#txAcc').value||''};
+  if(UI.editTx){const old=S.tx.find(x=>x.id===UI.editTx);if(old&&old.source==='sms')smsRemember(old,data);act(store.update('tx',UI.editTx,data),'اتحفظ التعديل')}else act(store.add('tx',{...data,source:'manual',ts:Date.now()}),'اتضاف');
+  $('#txAmt').value='';$('#txNote').value='';$('#txComment').value='';closeSheet()};
 // edit any transaction later: tap it in a list
 function editTx(id){const t=S.tx.find(x=>x.id===id);if(!t)return;UI.editTx=t.id;
   UI.txType=t.type==='income'?'income':'expense';document.querySelectorAll('#txType button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===UI.txType));
   UI.txCat=t.category||'تاني';showSheet('#sheet');renderCatGrid();fillAccSelects();
-  $('#txAmt').value=t.amount;$('#txNote').value=t.note||'';$('#txDate').value=t.date||todayISO();$('#txAcc').value=accById(t.accountId)?t.accountId:'';
+  $('#txAmt').value=t.amount;$('#txNote').value=t.note||'';$('#txComment').value=t.comment||'';$('#txDate').value=t.date||todayISO();$('#txAcc').value=accById(t.accountId)?t.accountId:'';
   $('#txSheetTitle').textContent='تعديل العملية';$('#txSubmit').textContent='احفظ التعديل';$('#txDelete').hidden=false}
 document.addEventListener('click',e=>{const it=e.target.closest('[data-txedit]');if(!it||e.target.closest('button'))return;editTx(it.dataset.txedit)});
 $('#txDelete').onclick=()=>{const b=$('#txDelete');if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='متأكد؟ دوس تاني عشان تمسح';setTimeout(()=>{b.dataset.armed='';b.textContent='امسح العملية دي'},3000);return}
@@ -2170,14 +2177,14 @@ async function importClip(){let txt='';
   if(!fresh.length){if(dupe||noise){toast(dupe?'الرسايل دي متسجلة قبل كده':'دي رسايل كود تحقق أو كشف حساب، مش مصروف. اتجاهلتها');try{await navigator.clipboard.writeText('')}catch(e){}return}
     // show what was in the clipboard so it's clear why nothing was read
     showSmsView();$('#smsIn').value=txt;toast('ماعرفتش أقرا مبلغ من اللي في الحافظة. بص عليه تحت');return}
-  let ok=0;for(const p of fresh){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
+  let ok=0;for(const p of fresh){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,comment:p.comment||'',mkey:p.mkey||'',date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
   toast(`اتسجّل ${ok===1?'حركة واحدة':ok===2?'حركتين':ok+' '+(ok<=10?'حركات':'حركة')} من رسايل البنك${dupe?` · ${dupe} متسجلين قبل كده`:''}${noise?` · اتجاهلت ${noise} كود/كشف`:''}`,'ok');
   // empty the clipboard so the Shortcut starts a fresh pile
   try{await navigator.clipboard.writeText('')}catch(e){}}
 document.addEventListener('click',e=>{if(e.target.closest('[data-smsclip]'))importClip()});
 $('#pendAdd').onclick=async()=>{
   const sel=S.pending.filter(p=>p.on&&p.amount>0);if(!sel.length){toast('اختار رسالة واحدة على الأقل');return}
-  let ok=0;for(const p of sel){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
+  let ok=0;for(const p of sel){try{await store.add('tx',{type:p.type,amount:p.amount,category:p.category,note:p.note,comment:p.comment||'',mkey:p.mkey||'',date:p.date,accountId:p.accountId||'',source:'sms',hash:p.hash,ts:Date.now()});ok++}catch(e){}}
   toast(ok===sel.length?`اتضاف ${ok} حركة من الرسايل`:`اتضاف ${ok} من ${sel.length}. جرّب الباقي تاني.`);
   S.pending=[];$('#smsIn').value='';renderPending();
 };
